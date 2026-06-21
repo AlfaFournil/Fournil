@@ -249,7 +249,7 @@
     var defaultTime = String(now.getHours()).padStart(2, '0') + ':' + String(roundedMin).padStart(2, '0');
     return '' +
       '<div class="modal-overlay" data-action="close-add">' +
-        '<div class="modal-box" onclick="event.stopPropagation()">' +
+        '<div class="modal-box" data-action="noop">' +
           '<div class="modal-header"><h2 class="modal-title">Nouvelle livraison</h2><button class="close-btn" data-action="close-add">&#10005;</button></div>' +
           '<div class="field"><label>Client *</label><input id="f-client" placeholder="Nom du client" /></div>' +
           '<div class="field"><label>Adresse *</label><input id="f-address" placeholder="Adresse de livraison" /></div>' +
@@ -267,7 +267,7 @@
     if (!d) return '';
     var meta = STATUS_META[d.status];
     var isPointed = d.status !== 'pending';
-    var html = '<div class="modal-overlay" data-action="close-detail"><div class="modal-box" onclick="event.stopPropagation()">';
+    var html = '<div class="modal-overlay" data-action="close-detail"><div class="modal-box" data-action="noop">';
     html += '<button class="close-btn" style="position:absolute;top:18px;left:18px;" data-action="close-detail">&#10005;</button>';
     if (isPointed) {
       var timeStr = d.deliveredAt ? new Date(d.deliveredAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
