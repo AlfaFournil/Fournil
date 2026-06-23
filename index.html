@@ -34,11 +34,11 @@
   .header-row{display:flex;align-items:center;gap:12px;padding-top:24px;padding-bottom:4px;}
   .badge-circle{width:48px;height:48px;border-radius:50%;background:var(--crust);border:2px solid var(--wheat);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .badge-circle span{font-family:var(--display-font);color:var(--wheat);font-weight:700;font-size:15px;}
-  .header-text{flex:1;}
+  .header-text{flex:1;min-width:0;}
   .eyebrow{text-transform:uppercase;font-weight:600;color:var(--taupe);font-size:10px;letter-spacing:.12em;margin:0 0 2px;}
   .brand-title{font-family:var(--display-font);color:var(--crust);font-size:22px;font-weight:700;line-height:1;margin:0;}
-  .livreur-chip{font-size:11px;color:var(--taupe);margin-top:2px;}
-  .btn-logout{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--taupe);cursor:pointer;white-space:nowrap;}
+  .header-actions{display:flex;gap:6px;flex-shrink:0;}
+  .btn-sm{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--taupe);cursor:pointer;white-space:nowrap;}
   .subtitle{font-size:12px;color:var(--taupe);margin:6px 0 16px;}
   .error-box{margin-bottom:12px;font-size:12px;padding:8px 12px;border-radius:8px;background:var(--brique-soft);color:var(--brique);}
   .date-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
@@ -73,7 +73,8 @@
   .close-btn{background:none;border:none;font-size:20px;color:var(--taupe);cursor:pointer;padding:4px;}
   .field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
   .field label{font-size:12px;font-weight:500;color:var(--taupe);}
-  .field input,.field textarea{width:100%;padding:10px;border-radius:8px;font-size:14px;background:#fff;border:1px solid var(--border);color:var(--crust);font-family:var(--body-font);}
+  .field input,.field textarea,.field select{width:100%;padding:10px;border-radius:8px;font-size:14px;background:#fff;border:1px solid var(--border);color:var(--crust);font-family:var(--body-font);}
+  .field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A7860' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
   .field textarea{resize:none;}
   .btn-primary{width:100%;padding:13px;border-radius:12px;border:none;font-weight:600;font-size:14px;cursor:pointer;background:var(--crust);color:var(--flour);margin-top:4px;}
   .btn-pdf{width:100%;padding:11px;border-radius:10px;border:2px dashed var(--wheat);background:var(--wheat-soft);color:var(--crust);font-weight:600;font-size:13px;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;}
@@ -95,6 +96,15 @@
   .stamp-inner{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;}
   .stamp-text{font-family:var(--mono-font);font-weight:700;font-size:9px;line-height:1.2;}
   @keyframes stampIn{0%{opacity:0;transform:scale(1.6) rotate(-18deg);}60%{opacity:1;}100%{opacity:1;transform:scale(1) rotate(-12deg);}}
+  .livreur-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+  .livreur-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+  .livreur-info{flex:1;min-width:0;}
+  .livreur-name{font-weight:600;font-size:14px;color:var(--crust);margin:0;}
+  .livreur-phone{font-size:12px;color:var(--taupe);text-decoration:none;display:block;margin-top:2px;}
+  .livreur-del{background:none;border:none;color:var(--brique);font-size:18px;cursor:pointer;padding:2px 6px;flex-shrink:0;}
+  .add-livreur-row{display:flex;gap:8px;margin-bottom:8px;}
+  .add-livreur-row input{flex:1;padding:9px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--body-font);color:var(--crust);background:#fff;min-width:0;}
+  .btn-add{padding:9px 14px;border-radius:8px;border:none;background:var(--wheat);color:var(--crust);font-weight:700;font-size:18px;cursor:pointer;flex-shrink:0;}
   .spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--crust);animation:spin .9s linear infinite;display:inline-block;}
   .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;color:var(--taupe);}
   @keyframes spin{to{transform:rotate(360deg);}}
@@ -116,21 +126,24 @@ var STATUS_META={
   incident:{label:'Incident',fg:'#B5392C',bg:'#FAE6E3'}
 };
 var OUTCOMES=[{key:'delivered',label:'Livre'},{key:'absent',label:'Absent'},{key:'refused',label:'Refuse'},{key:'incident',label:'Incident'}];
+function loadLivreurs(){try{var r=localStorage.getItem('fdj-livreurs-list');return r?JSON.parse(r):[];}catch(e){return[];}}
+function saveLivreurs(list){try{localStorage.setItem('fdj-livreurs-list',JSON.stringify(list));}catch(e){}}
 var state={
   screen:'login',loginError:'',
-  livreurName:localStorage.getItem('fdj-livreur')||'',
-  livreurPhone:localStorage.getItem('fdj-livreur-phone')||'',
+  livreurs:loadLivreurs(),
   date:toLocalISODate(new Date()),deliveries:[],loading:false,
-  showAdd:false,selectedId:null,errorMsg:'',pendingOutcome:'delivered',
-  pdfParsing:false,pdfData:null
+  showAdd:false,showLivreurs:false,
+  selectedId:null,errorMsg:'',pendingOutcome:'delivered',
+  selectedLivreurId:'',pdfParsing:false,pdfData:null
 };
-if(sessionStorage.getItem('fdj-auth')==='1'){state.screen=state.livreurName?'app':'name';}
-
+if(sessionStorage.getItem('fdj-auth')==='1')state.screen='app';
 function toLocalISODate(d){var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
 function formatDateLabel(s){var p=s.split('-').map(Number),dt=new Date(p[0],p[1]-1,p[2]);var l=dt.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});return l.charAt(0).toUpperCase()+l.slice(1);}
 function genId(){return 'd_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
+function addLivreur(name,phone){var l={id:genId(),name:name.trim(),phone:phone.trim()};state.livreurs=state.livreurs.concat([l]);saveLivreurs(state.livreurs);}
+function deleteLivreur(id){state.livreurs=state.livreurs.filter(function(l){return l.id!==id;});saveLivreurs(state.livreurs);}
+function getLivreurById(id){return state.livreurs.find(function(l){return l.id===id;})||null;}
 function parsePdfText(text){
   var lines=text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
   var result={client:'',address:'',ref:'',instructions:''};
@@ -138,8 +151,7 @@ function parsePdfText(text){
   for(i=0;i<lines.length;i++){if(/N.?\s*BL/i.test(lines[i])){var bm=lines[i].match(/N.?\s*(BL[\d\/]+)/i);if(bm)result.ref=bm[1].trim();break;}}
   for(i=0;i<lines.length;i++){if(/^\d{5}\s+[A-Za-z]/.test(lines[i])){if(cpIdx===-1){cpIdx=i;}else{cpIdx=i;break;}}}
   if(cpIdx>0){
-    var addrLine=lines[cpIdx-1]||'';
-    var ci=cpIdx-2;while(ci>=0&&!/[A-Z]{3,}/.test(lines[ci]))ci--;
+    var addrLine=lines[cpIdx-1]||'';var ci=cpIdx-2;while(ci>=0&&!/[A-Z]{3,}/.test(lines[ci]))ci--;
     var cl=[];for(var j=ci;j<cpIdx-1;j++)cl.push(lines[j]);
     result.client=cl.join(' ').trim();result.address=addrLine+', '+lines[cpIdx];
     for(i=cpIdx+1;i<Math.min(cpIdx+4,lines.length);i++){if(/tel|mob/i.test(lines[i])){var tm=lines[i].match(/[\d\s\.]{10,}/);if(tm)result.instructions='Tel : '+tm[0].trim();}}
@@ -159,8 +171,7 @@ function readPdf(file){
     pdfjsLib.getDocument({data:new Uint8Array(e.target.result)}).promise.then(function(pdf){
       var pages=[];for(var p=1;p<=pdf.numPages;p++)pages.push(p);
       Promise.all(pages.map(function(p){return pdf.getPage(p).then(function(pg){return pg.getTextContent().then(function(c){return c.items.map(function(it){return it.str;}).join('\n');});});})).then(function(texts){
-        var parsed=parsePdfText(texts.join('\n'));
-        state.pdfData=parsed;state.pdfParsing=false;render();
+        var parsed=parsePdfText(texts.join('\n'));state.pdfData=parsed;state.pdfParsing=false;render();
         setTimeout(function(){
           if(document.getElementById('f-client')&&parsed.client)document.getElementById('f-client').value=parsed.client;
           if(document.getElementById('f-address')&&parsed.address)document.getElementById('f-address').value=parsed.address;
@@ -172,36 +183,20 @@ function readPdf(file){
   };
   reader.readAsArrayBuffer(file);
 }
-function load(date){
-  state.loading=true;render();
-  try{var raw=localStorage.getItem('fdj-tournee:'+date);state.deliveries=raw?(JSON.parse(raw)||[]):[];}catch(e){state.deliveries=[];}
-  state.loading=false;render();
-}
-function persist(list){
-  state.deliveries=list;
-  try{localStorage.setItem('fdj-tournee:'+state.date,JSON.stringify(list));}catch(e){state.errorMsg='Sauvegarde echouee.';}
-}
-function addDelivery(data){
-  var entry={id:genId(),client:data.client,address:data.address,time:data.time,ref:data.ref||'',instructions:data.instructions||'',status:'pending',deliveredAt:null,livreur:'',livreurPhone:'',note:'',createdAt:new Date().toISOString()};
-  persist(state.deliveries.concat([entry]));state.showAdd=false;state.pdfData=null;render();
-}
+function load(date){state.loading=true;render();try{var raw=localStorage.getItem('fdj-tournee:'+date);state.deliveries=raw?(JSON.parse(raw)||[]):[];}catch(e){state.deliveries=[];}state.loading=false;render();}
+function persist(list){state.deliveries=list;try{localStorage.setItem('fdj-tournee:'+state.date,JSON.stringify(list));}catch(e){state.errorMsg='Sauvegarde echouee.';}}
+function addDelivery(data){var entry={id:genId(),client:data.client,address:data.address,time:data.time,ref:data.ref||'',instructions:data.instructions||'',status:'pending',deliveredAt:null,livreur:'',livreurPhone:'',note:'',createdAt:new Date().toISOString()};persist(state.deliveries.concat([entry]));state.showAdd=false;state.pdfData=null;render();}
 function pointDelivery(id,updates){persist(state.deliveries.map(function(d){return d.id===id?Object.assign({},d,updates):d;}));render();}
 function revertDelivery(id){pointDelivery(id,{status:'pending',deliveredAt:null,livreur:'',livreurPhone:'',note:''});}
 function deleteDelivery(id){persist(state.deliveries.filter(function(d){return d.id!==id;}));state.selectedId=null;render();}
-function changeDate(delta){
-  if(delta==='today'){state.date=toLocalISODate(new Date());}
-  else{var p=state.date.split('-').map(Number),dt=new Date(p[0],p[1]-1,p[2]);dt.setDate(dt.getDate()+delta);state.date=toLocalISODate(dt);}
-  load(state.date);
-}
+function changeDate(delta){if(delta==='today'){state.date=toLocalISODate(new Date());}else{var p=state.date.split('-').map(Number),dt=new Date(p[0],p[1]-1,p[2]);dt.setDate(dt.getDate()+delta);state.date=toLocalISODate(dt);}load(state.date);}
 function statChip(l,v,c){return'<div class="stat-chip"><p class="stat-value" style="color:'+c+'">'+v+'</p><p class="stat-label">'+l+'</p></div>';}
-function deliveryCard(d){var meta=STATUS_META[d.status];return'<button class="delivery-card" data-action="select" data-id="'+d.id+'"><div class="card-top"><span class="card-time">'+esc(d.time)+'</span><span class="status-badge" style="color:'+meta.fg+';background:'+meta.bg+'">'+meta.label+'</span></div><p class="card-client">'+esc(d.client)+'</p><p class="card-address">'+esc(d.address)+'</p></button>';}
+function deliveryCard(d){var meta=STATUS_META[d.status];return'<button class="delivery-card" data-action="select" data-id="'+d.id+'"><div class="card-top"><span class="card-time">'+esc(d.time)+'</span><span class="status-badge" style="color:'+meta.fg+';background:'+meta.bg+'">'+meta.label+'</span>'+(d.livreur?'<span style="font-size:10px;color:var(--taupe);">👤 '+esc(d.livreur)+'</span>':'')+'</div><p class="card-client">'+esc(d.client)+'</p><p class="card-address">'+esc(d.address)+'</p></button>';}
 function renderTimeline(){
   if(state.loading)return'<div class="loading-state"><div class="spinner"></div><span style="font-size:14px;margin-top:8px;">Chargement...</span></div>';
   var sorted=state.deliveries.slice().sort(function(a,b){return(a.time||'').localeCompare(b.time||'');});
   if(!sorted.length)return'<div class="empty-state"><div class="icon">📦</div><p class="title">Aucune livraison prevue.</p><p class="sub">Appuyez sur + pour ajouter ou importer un PDF.</p></div>';
-  var groups={},order=[];
-  sorted.forEach(function(d){var h=(d.time||'00:00').split(':')[0];if(!groups[h]){groups[h]=[];order.push(h);}groups[h].push(d);});
-  order.sort();
+  var groups={},order=[];sorted.forEach(function(d){var h=(d.time||'00:00').split(':')[0];if(!groups[h]){groups[h]=[];order.push(h);}groups[h].push(d);});order.sort();
   return order.map(function(h){return'<div class="hour-block"><div class="hour-header"><span class="hour-label">'+h+'h</span><div class="hour-line"></div></div><div class="delivery-list">'+groups[h].map(deliveryCard).join('')+'</div></div>';}).join('');
 }
 function renderAddModal(){
@@ -210,28 +205,21 @@ function renderAddModal(){
   var dt=String(now.getHours()).padStart(2,'0')+':'+String(rm).padStart(2,'0');
   var pdfBtn=state.pdfParsing?'<button class="btn-pdf" disabled>⏳ Lecture du PDF en cours...</button>':'<button class="btn-pdf" data-action="open-pdf">📄 Importer un bon de livraison PDF</button>';
   var pdfOk=state.pdfData?'<div class="pdf-ok">✅ PDF importe — verifiez et completez les champs.</div>':'';
-  return'<div class="modal-overlay" data-action="close-add"><div class="modal-box" data-action="noop">'+
-    '<div class="modal-header"><h2 class="modal-title">Nouvelle livraison</h2><button class="close-btn" data-action="close-add">&#10005;</button></div>'+
-    pdfBtn+pdfOk+
-    '<div class="field"><label>Client *</label><input id="f-client" placeholder="Nom du client" value="'+esc(state.pdfData&&state.pdfData.client||'')+'" /></div>'+
-    '<div class="field"><label>Adresse *</label><input id="f-address" placeholder="Adresse de livraison" value="'+esc(state.pdfData&&state.pdfData.address||'')+'" /></div>'+
-    '<div class="field"><label>Heure prevue *</label><input id="f-time" type="time" value="'+dt+'" /></div>'+
-    '<div class="field"><label>Commande</label><input id="f-ref" placeholder="Ex. 6 baguettes, 2 tartes" value="'+esc(state.pdfData&&state.pdfData.ref||'')+'" /></div>'+
-    '<div class="field"><label>Instructions</label><textarea id="f-instructions" rows="2" placeholder="Code immeuble, etage...">'+esc(state.pdfData&&state.pdfData.instructions||'')+'</textarea></div>'+
-    '<button class="btn-primary" data-action="submit-add">Ajouter a la tournee</button>'+
-    '</div></div>';
+  return'<div class="modal-overlay" data-action="close-add"><div class="modal-box" data-action="noop"><div class="modal-header"><h2 class="modal-title">Nouvelle livraison</h2><button class="close-btn" data-action="close-add">&#10005;</button></div>'+pdfBtn+pdfOk+'<div class="field"><label>Client *</label><input id="f-client" placeholder="Nom du client" value="'+esc(state.pdfData&&state.pdfData.client||'')+'" /></div><div class="field"><label>Adresse *</label><input id="f-address" placeholder="Adresse de livraison" value="'+esc(state.pdfData&&state.pdfData.address||'')+'" /></div><div class="field"><label>Heure prevue *</label><input id="f-time" type="time" value="'+dt+'" /></div><div class="field"><label>Commande</label><input id="f-ref" placeholder="Ex. 6 baguettes, 2 tartes" value="'+esc(state.pdfData&&state.pdfData.ref||'')+'" /></div><div class="field"><label>Instructions</label><textarea id="f-instructions" rows="2" placeholder="Code immeuble, etage...">'+esc(state.pdfData&&state.pdfData.instructions||'')+'</textarea></div><button class="btn-primary" data-action="submit-add">Ajouter a la tournee</button></div></div>';
+}
+function renderLivreursModal(){
+  if(!state.showLivreurs)return'';
+  var items=state.livreurs.length===0?'<p style="color:var(--taupe);font-size:13px;text-align:center;padding:16px 0;">Aucun livreur enregistre.</p>':'<div class="livreur-list">'+state.livreurs.map(function(l){return'<div class="livreur-item"><div class="livreur-info"><p class="livreur-name">👤 '+esc(l.name)+'</p>'+(l.phone?'<a class="livreur-phone" href="tel:'+esc(l.phone)+'">📞 '+esc(l.phone)+'</a>':'<span class="livreur-phone">Pas de telephone</span>')+'</div><button class="livreur-del" data-action="delete-livreur" data-id="'+l.id+'">🗑</button></div>';}).join('')+'</div>';
+  return'<div class="modal-overlay" data-action="close-livreurs"><div class="modal-box" data-action="noop"><div class="modal-header"><h2 class="modal-title">👥 Livreurs</h2><button class="close-btn" data-action="close-livreurs">&#10005;</button></div>'+items+'<div class="divider"></div><p style="font-size:13px;font-weight:600;color:var(--crust);margin:0 0 10px;">Ajouter un livreur</p><div class="add-livreur-row"><input id="nl-name" placeholder="Prenom" type="text" /><input id="nl-phone" placeholder="Telephone" type="tel" /><button class="btn-add" data-action="submit-add-livreur">+</button></div></div></div>';
 }
 function renderDetailModal(){
   if(!state.selectedId)return'';
-  var d=state.deliveries.find(function(x){return x.id===state.selectedId;});
-  if(!d)return'';
+  var d=state.deliveries.find(function(x){return x.id===state.selectedId;});if(!d)return'';
   var meta=STATUS_META[d.status],isPointed=d.status!=='pending';
   var html='<div class="modal-overlay" data-action="close-detail"><div class="modal-box" data-action="noop">';
   html+='<button class="close-btn" style="position:absolute;top:18px;left:18px;" data-action="close-detail">&#10005;</button>';
   if(isPointed){var ts=d.deliveredAt?new Date(d.deliveredAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';html+='<div class="stamp" style="border:2px solid '+meta.fg+'"><div class="stamp-inner" style="border:1px dashed '+meta.fg+'"><span class="stamp-text" style="color:'+meta.fg+'">'+meta.label.toUpperCase()+'<br>'+ts+'</span></div></div>';}
-  html+='<div style="padding-top:32px;padding-right:64px;">';
-  html+='<p style="font-family:var(--mono-font);color:var(--taupe);font-size:12px;margin:0 0 2px;">'+esc(d.time)+(d.ref?' · '+esc(d.ref):'')+'</p>';
-  html+='<h2 style="font-family:var(--display-font);color:var(--crust);font-size:20px;font-weight:700;margin:0;">'+esc(d.client)+'</h2></div>';
+  html+='<div style="padding-top:32px;padding-right:64px;"><p style="font-family:var(--mono-font);color:var(--taupe);font-size:12px;margin:0 0 2px;">'+esc(d.time)+(d.ref?' · '+esc(d.ref):'')+'</p><h2 style="font-family:var(--display-font);color:var(--crust);font-size:20px;font-weight:700;margin:0;">'+esc(d.client)+'</h2></div>';
   html+='<div class="info-row"><span>📍</span><span>'+esc(d.address)+'</span></div>';
   if(d.instructions)html+='<div class="info-row" style="color:var(--taupe)"><span>📝</span><span>'+esc(d.instructions)+'</span></div>';
   html+='<div class="divider"></div>';
@@ -239,13 +227,17 @@ function renderDetailModal(){
     html+='<p style="font-size:14px;font-weight:600;margin:0 0 12px;">Pointer la livraison</p><div class="outcome-grid">';
     OUTCOMES.forEach(function(o){var active=state.pendingOutcome===o.key,m=STATUS_META[o.key];html+='<button class="outcome-btn'+(active?' active':'')+'" style="'+(active?'background:'+m.fg+';':'')+'" data-action="set-outcome" data-key="'+o.key+'">'+o.label+'</button>';});
     html+='</div>';
-    html+='<div class="field"><label>Nom du livreur</label><input id="f-livreur" value="'+esc(state.livreurName)+'" placeholder="Votre prenom" /></div>';
+    var options='<option value="">-- Choisir un livreur --</option>';
+    state.livreurs.forEach(function(l){var sel=state.selectedLivreurId===l.id?' selected':'';options+='<option value="'+esc(l.id)+'"'+sel+'>'+esc(l.name)+(l.phone?' ('+esc(l.phone)+')':'')+'</option>';});
+    html+='<div class="field"><label>Livreur</label><select id="f-livreur-select">'+options+'</select></div>';
+    var selLiv=getLivreurById(state.selectedLivreurId);
+    if(selLiv&&selLiv.phone)html+='<div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;font-size:13px;">📞 <a href="tel:'+esc(selLiv.phone)+'" style="color:var(--wheat);">'+esc(selLiv.phone)+'</a></div>';
     html+='<div class="field"><label>Vos constats</label><textarea id="f-note" rows="3" placeholder="Ex. remis en main propre, laisse chez le voisin..."></textarea></div>';
     html+='<button class="btn-primary" style="background:'+STATUS_META[state.pendingOutcome].fg+';color:#fff;" data-action="submit-point" data-id="'+d.id+'">Valider le pointage</button>';
   } else {
     var ts2=d.deliveredAt?new Date(d.deliveredAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
     html+='<div class="recap-grid"><div><p class="recap-label">Heure reelle</p><p class="recap-value mono">'+ts2+'</p></div>';
-    if(d.livreur)html+='<div><p class="recap-label">Livreur</p><p class="recap-value">'+esc(d.livreur)+(d.livreurPhone?' · <a href="tel:'+esc(d.livreurPhone)+'" style="color:var(--wheat);">📞 '+esc(d.livreurPhone)+'</a>':'')+'</p></div>';
+    if(d.livreur)html+='<div><p class="recap-label">Livreur</p><p class="recap-value">'+esc(d.livreur)+(d.livreurPhone?' <a href="tel:'+esc(d.livreurPhone)+'" style="display:block;color:var(--wheat);font-size:12px;font-weight:400;">📞 '+esc(d.livreurPhone)+'</a>':'')+'</p></div>';
     html+='</div>';
     if(d.note)html+='<div style="margin-bottom:12px;"><p class="recap-label">Constats</p><p style="font-size:14px;margin:0;">'+esc(d.note)+'</p></div>';
     html+='<div class="actions-row"><button class="btn-outline" data-action="revert" data-id="'+d.id+'">&#8634; Annuler</button><button class="btn-danger" data-action="delete" data-id="'+d.id+'">&#128465;</button></div>';
@@ -257,80 +249,46 @@ function renderApp(){
   var delivered=state.deliveries.filter(function(d){return d.status==='delivered';}).length;
   var pending=state.deliveries.filter(function(d){return d.status==='pending';}).length;
   var issues=state.deliveries.filter(function(d){return['absent','refused','incident'].indexOf(d.status)!==-1;}).length;
-  var html='<div class="container">';
-  html+='<div class="header-row"><div class="badge-circle"><span>FdJ</span></div><div class="header-text"><p class="eyebrow">Carnet de tournee</p><h1 class="brand-title">Fournil de Jean</h1>';
-  html+='<p class="livreur-chip">👤 '+esc(state.livreurName)+(state.livreurPhone?' · <a href="tel:'+esc(state.livreurPhone)+'" style="color:var(--wheat);text-decoration:none;">📞 '+esc(state.livreurPhone)+'</a>':'')+'</p>';
-  html+='</div><button class="btn-logout" data-action="logout">Changer</button></div>';
+  var html='<div class="container"><div class="header-row"><div class="badge-circle"><span>FdJ</span></div><div class="header-text"><p class="eyebrow">Carnet de tournee</p><h1 class="brand-title">Fournil de Jean</h1></div><div class="header-actions"><button class="btn-sm" data-action="open-livreurs">👥 Livreurs</button></div></div>';
   html+='<p class="subtitle">Suivi des livraisons, heure par heure</p>';
   if(state.errorMsg)html+='<div class="error-box">'+esc(state.errorMsg)+'</div>';
   html+='<div class="date-row"><button class="btn-icon" data-action="prev-day">&#8249;</button><button class="date-btn" data-action="today">'+formatDateLabel(state.date)+'</button><button class="btn-icon" data-action="next-day">&#8250;</button></div>';
   html+='<div class="stats-grid">'+statChip('Total',total,'#2B1B12')+statChip('Livrees',delivered,'#5B7553')+statChip('Attente',pending,'#C98A2B')+statChip('Incidents',issues,'#B5392C')+'</div>';
-  html+=renderTimeline()+'</div>';
-  html+='<button class="fab" data-action="open-add">+</button>';
-  html+=renderAddModal()+renderDetailModal();
+  html+=renderTimeline()+'</div><button class="fab" data-action="open-add">+</button>';
+  html+=renderAddModal()+renderLivreursModal()+renderDetailModal();
   return html;
 }
 function renderLoginScreen(){return'<div class="login-screen"><div class="login-badge"><span>FdJ</span></div><h1 class="login-title">Fournil de Jean</h1><p class="login-sub">Carnet de tournee — acces securise</p><div class="login-card"><label class="login-label">Mot de passe</label><input class="login-input" id="l-pwd" type="password" placeholder="••••••••" /><button class="login-btn" data-action="do-login">Entrer</button><p class="login-error">'+esc(state.loginError)+'</p></div></div>';}
-function renderNameScreen(){return'<div class="login-screen"><div class="login-badge"><span>FdJ</span></div><h1 class="login-title">Bonjour !</h1><p class="login-sub">Entrez vos informations</p><div class="login-card"><label class="login-label">Votre prenom</label><input class="login-input" id="l-name" type="text" placeholder="Ex. Mohamed" /><label class="login-label">Votre numero de telephone</label><input class="login-input" id="l-phone" type="tel" placeholder="Ex. 06 12 34 56 78" /><button class="login-btn" data-action="do-setname">Continuer</button></div></div>';}
 function render(){
   if(state.screen==='login'){document.getElementById('app').innerHTML=renderLoginScreen();setTimeout(function(){var el=document.getElementById('l-pwd');if(el)el.focus();},50);return;}
-  if(state.screen==='name'){document.getElementById('app').innerHTML=renderNameScreen();setTimeout(function(){var el=document.getElementById('l-name');if(el)el.focus();},50);return;}
   document.getElementById('app').innerHTML=renderApp();
 }
 document.getElementById('app').addEventListener('click',function(e){
   var el=e.target.closest('[data-action]');if(!el)return;
   var action=el.getAttribute('data-action'),id=el.getAttribute('data-id');
   if(action==='noop'){e.stopPropagation();return;}
-  if(action==='do-login'){
-    var pwd=document.getElementById('l-pwd').value;
-    if(pwd===MOT_DE_PASSE){sessionStorage.setItem('fdj-auth','1');state.loginError='';state.screen=state.livreurName?'app':'name';if(state.screen==='app')load(state.date);else render();}
-    else{state.loginError='Mot de passe incorrect.';render();}
-    return;
-  }
-  if(action==='do-setname'){
-    var name=document.getElementById('l-name').value.trim();
-    if(!name)return;
-    var phone=document.getElementById('l-phone').value.trim();
-    state.livreurName=name;state.livreurPhone=phone;
-    localStorage.setItem('fdj-livreur',name);
-    localStorage.setItem('fdj-livreur-phone',phone);
-    state.screen='app';load(state.date);return;
-  }
-  if(action==='logout'){state.livreurName='';state.livreurPhone='';localStorage.removeItem('fdj-livreur');localStorage.removeItem('fdj-livreur-phone');state.screen='name';render();return;}
+  if(action==='do-login'){var pwd=document.getElementById('l-pwd').value;if(pwd===MOT_DE_PASSE){sessionStorage.setItem('fdj-auth','1');state.loginError='';state.screen='app';load(state.date);}else{state.loginError='Mot de passe incorrect.';render();}return;}
+  if(action==='open-livreurs'){state.showLivreurs=true;render();return;}
+  if(action==='close-livreurs'){state.showLivreurs=false;render();return;}
+  if(action==='submit-add-livreur'){var nm=document.getElementById('nl-name').value.trim();var ph=document.getElementById('nl-phone').value.trim();if(!nm)return;addLivreur(nm,ph);render();return;}
+  if(action==='delete-livreur'){if(confirm('Supprimer ce livreur ?')){deleteLivreur(id);render();}return;}
   if(action==='prev-day')changeDate(-1);
   else if(action==='next-day')changeDate(1);
   else if(action==='today')changeDate('today');
   else if(action==='open-add'){state.showAdd=true;state.pdfData=null;render();}
   else if(action==='close-add'){state.showAdd=false;state.pdfData=null;render();}
   else if(action==='open-pdf'){document.getElementById('pdf-input').click();}
-  else if(action==='submit-add'){
-    var c=document.getElementById('f-client').value.trim();
-    var a=document.getElementById('f-address').value.trim();
-    var t=document.getElementById('f-time').value;
-    var r=document.getElementById('f-ref').value.trim();
-    var ins=document.getElementById('f-instructions').value.trim();
-    if(!c||!a||!t)return;
-    addDelivery({client:c,address:a,time:t,ref:r,instructions:ins});
-  }
-  else if(action==='select'){state.selectedId=id;state.pendingOutcome='delivered';render();}
+  else if(action==='submit-add'){var c=document.getElementById('f-client').value.trim();var a=document.getElementById('f-address').value.trim();var t=document.getElementById('f-time').value;var r=document.getElementById('f-ref').value.trim();var ins=document.getElementById('f-instructions').value.trim();if(!c||!a||!t)return;addDelivery({client:c,address:a,time:t,ref:r,instructions:ins});}
+  else if(action==='select'){state.selectedId=id;state.pendingOutcome='delivered';state.selectedLivreurId='';render();}
   else if(action==='close-detail'){state.selectedId=null;render();}
   else if(action==='set-outcome'){state.pendingOutcome=el.getAttribute('data-key');render();}
-  else if(action==='submit-point'){
-    var livreur=document.getElementById('f-livreur').value.trim();
-    var note=document.getElementById('f-note').value.trim();
-    pointDelivery(id,{status:state.pendingOutcome,deliveredAt:new Date().toISOString(),livreur:livreur,livreurPhone:state.livreurPhone,note:note});
-  }
+  else if(action==='submit-point'){var liv=getLivreurById(state.selectedLivreurId);var note=document.getElementById('f-note').value.trim();pointDelivery(id,{status:state.pendingOutcome,deliveredAt:new Date().toISOString(),livreur:liv?liv.name:'',livreurPhone:liv?liv.phone:'',note:note});}
   else if(action==='revert')revertDelivery(id);
   else if(action==='delete')deleteDelivery(id);
 });
-document.getElementById('app').addEventListener('keydown',function(e){
-  if(e.key!=='Enter')return;
-  if(state.screen==='login'){var b=document.querySelector('[data-action="do-login"]');if(b)b.click();}
-  if(state.screen==='name'){var b=document.querySelector('[data-action="do-setname"]');if(b)b.click();}
-});
-document.getElementById('pdf-input').addEventListener('change',function(e){
-  var file=e.target.files&&e.target.files[0];if(file)readPdf(file);e.target.value='';
-});
+document.getElementById('app').addEventListener('change',function(e){if(e.target.id==='f-livreur-select'){state.selectedLivreurId=e.target.value;render();}});
+document.getElementById('app').addEventListener('keydown',function(e){if(e.key!=='Enter')return;if(state.screen==='login'){var b=document.querySelector('[data-action="do-login"]');if(b)b.click();}});
+document.getElementById('pdf-input').addEventListener('change',function(e){var file=e.target.files&&e.target.files[0];if(file)readPdf(file);e.target.value='';});
 render();
 if(state.screen==='app')load(state.date);
 })();
