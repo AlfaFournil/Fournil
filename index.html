@@ -8,15 +8,9 @@
 <meta name="theme-color" content="#2B1B12" />
 <title>Fournil de Jean — Carnet de tournée</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root {
-    --crust:#2B1B12;--flour:#FBF7EE;--wheat:#C98A2B;--wheat-soft:#F7E9D2;
-    --herb:#5B7553;--herb-soft:#E9F0E6;--brique:#B5392C;--brique-soft:#FAE6E3;
-    --taupe:#8A7860;--border:#E6DCC8;
-    --display-font:Georgia,'Times New Roman',serif;
-    --body-font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
-    --mono-font:'Courier New',Courier,monospace;
-  }
+  :root{--crust:#2B1B12;--flour:#FBF7EE;--wheat:#C98A2B;--wheat-soft:#F7E9D2;--herb:#5B7553;--herb-soft:#E9F0E6;--brique:#B5392C;--brique-soft:#FAE6E3;--taupe:#8A7860;--border:#E6DCC8;--display-font:Georgia,'Times New Roman',serif;--body-font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;--mono-font:'Courier New',Courier,monospace;}
   *{box-sizing:border-box;}
   body{margin:0;background:var(--flour);font-family:var(--body-font);color:var(--crust);}
   .login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--crust);}
@@ -31,82 +25,89 @@
   .login-btn{width:100%;padding:14px;border-radius:12px;border:none;background:var(--wheat);color:var(--crust);font-weight:700;font-size:15px;cursor:pointer;margin-top:4px;}
   .login-error{color:var(--brique);font-size:12px;text-align:center;margin-top:8px;min-height:18px;}
   .container{max-width:480px;margin:0 auto;padding:0 16px 112px;}
-  .header-row{display:flex;align-items:center;gap:12px;padding-top:24px;padding-bottom:4px;}
-  .badge-circle{width:48px;height:48px;border-radius:50%;background:var(--crust);border:2px solid var(--wheat);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .badge-circle span{font-family:var(--display-font);color:var(--wheat);font-weight:700;font-size:15px;}
+  .header-row{display:flex;align-items:center;gap:10px;padding-top:20px;padding-bottom:4px;}
+  .badge-circle{width:44px;height:44px;border-radius:50%;background:var(--crust);border:2px solid var(--wheat);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .badge-circle span{font-family:var(--display-font);color:var(--wheat);font-weight:700;font-size:14px;}
   .header-text{flex:1;min-width:0;}
-  .eyebrow{text-transform:uppercase;font-weight:600;color:var(--taupe);font-size:10px;letter-spacing:.12em;margin:0 0 2px;}
-  .brand-title{font-family:var(--display-font);color:var(--crust);font-size:22px;font-weight:700;line-height:1;margin:0;}
-  .header-actions{display:flex;gap:6px;flex-shrink:0;}
-  .btn-sm{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--taupe);cursor:pointer;white-space:nowrap;}
-  .subtitle{font-size:12px;color:var(--taupe);margin:6px 0 16px;}
+  .eyebrow{text-transform:uppercase;font-weight:600;color:var(--taupe);font-size:9px;letter-spacing:.12em;margin:0 0 1px;}
+  .brand-title{font-family:var(--display-font);color:var(--crust);font-size:20px;font-weight:700;line-height:1;margin:0;}
+  .header-actions{display:flex;gap:5px;flex-shrink:0;}
+  .btn-sm{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:10px;color:var(--taupe);cursor:pointer;white-space:nowrap;}
+  .subtitle{font-size:12px;color:var(--taupe);margin:4px 0 14px;}
   .error-box{margin-bottom:12px;font-size:12px;padding:8px 12px;border-radius:8px;background:var(--brique-soft);color:var(--brique);}
-  .date-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+  .date-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
   .btn-icon,.date-btn{background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--crust);font-family:var(--body-font);}
-  .btn-icon{padding:10px;font-size:16px;line-height:1;}
-  .date-btn{flex:1;text-align:center;padding:10px;font-weight:500;font-size:14px;}
-  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;}
-  .stat-chip{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 0;text-align:center;}
-  .stat-value{font-family:var(--mono-font);font-size:18px;font-weight:700;line-height:1;}
-  .stat-label{font-size:10px;color:var(--taupe);margin-top:4px;}
-  .hour-block{margin-bottom:24px;}
-  .hour-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
-  .hour-label{font-family:var(--display-font);color:var(--crust);font-size:20px;font-weight:700;}
+  .btn-icon{padding:9px;font-size:16px;line-height:1;}
+  .date-btn{flex:1;text-align:center;padding:9px;font-weight:500;font-size:13px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:18px;}
+  .stat-chip{background:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 0;text-align:center;}
+  .stat-value{font-family:var(--mono-font);font-size:17px;font-weight:700;line-height:1;}
+  .stat-label{font-size:9px;color:var(--taupe);margin-top:3px;}
+  .hour-block{margin-bottom:20px;}
+  .hour-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .hour-label{font-family:var(--display-font);color:var(--crust);font-size:19px;font-weight:700;}
   .hour-line{flex:1;height:1px;background:var(--border);}
-  .delivery-list{display:flex;flex-direction:column;gap:8px;}
-  .delivery-card{text-align:left;width:100%;border-radius:12px;padding:12px;background:#fff;border:1px solid var(--border);cursor:pointer;font-family:var(--body-font);}
-  .card-top{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .delivery-list{display:flex;flex-direction:column;gap:7px;}
+  .delivery-card{text-align:left;width:100%;border-radius:12px;padding:11px;background:#fff;border:1px solid var(--border);cursor:pointer;font-family:var(--body-font);}
+  .card-top{display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap;}
   .card-time{font-family:var(--mono-font);color:var(--taupe);font-size:11px;}
   .status-badge{font-weight:600;font-size:10px;padding:2px 8px;border-radius:999px;display:inline-block;}
-  .card-client{font-weight:700;font-size:14px;color:var(--crust);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .card-address{font-size:12px;color:var(--taupe);margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:64px 24px;}
-  .empty-state .icon{font-size:32px;margin-bottom:12px;}
+  .card-client{font-weight:700;font-size:13px;color:var(--crust);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .card-address{font-size:11px;color:var(--taupe);margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:56px 24px;}
+  .empty-state .icon{font-size:28px;margin-bottom:10px;}
   .empty-state .title{font-weight:600;font-size:14px;color:var(--crust);margin:0;}
   .empty-state .sub{font-size:12px;color:var(--taupe);margin:4px 0 0;}
-  .fab{position:fixed;bottom:24px;right:24px;border-radius:50%;width:56px;height:56px;background:var(--wheat);color:var(--crust);border:none;box-shadow:0 6px 16px rgba(201,138,43,.4);z-index:30;font-size:26px;line-height:1;cursor:pointer;}
+  .fab{position:fixed;bottom:22px;right:22px;border-radius:50%;width:54px;height:54px;background:var(--wheat);color:var(--crust);border:none;box-shadow:0 6px 16px rgba(201,138,43,.4);z-index:30;font-size:26px;line-height:1;cursor:pointer;}
   .modal-overlay{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;background:rgba(43,27,18,.55);}
-  .modal-box{width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;overflow-y:auto;background:var(--flour);max-height:90vh;position:relative;}
+  .modal-box{width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;overflow-y:auto;background:var(--flour);max-height:92vh;position:relative;}
   @media(min-width:640px){.modal-overlay{align-items:center;}.modal-box{border-radius:20px;}}
-  .modal-title{font-family:var(--display-font);color:var(--crust);font-size:18px;font-weight:700;margin:0;}
-  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .modal-title{font-family:var(--display-font);color:var(--crust);font-size:17px;font-weight:700;margin:0;}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
   .close-btn{background:none;border:none;font-size:20px;color:var(--taupe);cursor:pointer;padding:4px;}
-  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
-  .field label{font-size:12px;font-weight:500;color:var(--taupe);}
-  .field input,.field textarea,.field select{width:100%;padding:10px;border-radius:8px;font-size:14px;background:#fff;border:1px solid var(--border);color:var(--crust);font-family:var(--body-font);}
-  .field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A7860' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
+  .field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px;}
+  .field label{font-size:11px;font-weight:500;color:var(--taupe);}
+  .field input,.field textarea,.field select{width:100%;padding:9px 10px;border-radius:8px;font-size:13px;background:#fff;border:1px solid var(--border);color:var(--crust);font-family:var(--body-font);}
+  .field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A7860' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;}
   .field textarea{resize:none;}
-  .btn-primary{width:100%;padding:13px;border-radius:12px;border:none;font-weight:600;font-size:14px;cursor:pointer;background:var(--crust);color:var(--flour);margin-top:4px;}
-  .btn-pdf{width:100%;padding:11px;border-radius:10px;border:2px dashed var(--wheat);background:var(--wheat-soft);color:var(--crust);font-weight:600;font-size:13px;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn-primary{width:100%;padding:12px;border-radius:12px;border:none;font-weight:600;font-size:13px;cursor:pointer;background:var(--crust);color:var(--flour);margin-top:4px;}
+  .btn-pdf{width:100%;padding:10px;border-radius:10px;border:2px dashed var(--wheat);background:var(--wheat-soft);color:var(--crust);font-weight:600;font-size:12px;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
   .btn-pdf:disabled{opacity:.6;cursor:wait;}
-  .pdf-ok{background:var(--herb-soft);color:var(--herb);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;font-weight:500;}
-  .outcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
-  .outcome-btn{padding:10px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;background:#fff;border:1px solid var(--border);color:var(--crust);}
+  .btn-invoice{width:100%;padding:10px;border-radius:10px;border:2px dashed var(--herb);background:var(--herb-soft);color:var(--herb);font-weight:600;font-size:12px;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .pdf-ok{background:var(--herb-soft);color:var(--herb);border-radius:8px;padding:7px 10px;font-size:12px;margin-bottom:10px;font-weight:500;}
+  .outcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
+  .outcome-btn{padding:9px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;border:1px solid var(--border);color:var(--crust);}
   .outcome-btn.active{color:#fff;border:none;}
-  .divider{height:1px;background:var(--border);margin:16px 0;}
-  .info-row{display:flex;align-items:flex-start;gap:8px;font-size:14px;margin-top:10px;}
-  .recap-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;margin-bottom:12px;}
-  .recap-label{font-size:11px;color:var(--taupe);margin:0 0 2px;}
+  .divider{height:1px;background:var(--border);margin:14px 0;}
+  .info-row{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin-top:8px;}
+  .maps-link{color:var(--wheat);text-decoration:none;font-size:11px;display:inline-flex;align-items:center;gap:3px;margin-top:2px;}
+  .recap-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:10px;}
+  .recap-label{font-size:10px;color:var(--taupe);margin:0 0 1px;}
   .recap-value{font-weight:600;margin:0;}
   .recap-value.mono{font-family:var(--mono-font);}
-  .actions-row{display:flex;gap:8px;margin-top:8px;}
-  .btn-outline{flex:1;padding:10px;border-radius:8px;background:#fff;border:1px solid var(--border);color:var(--crust);font-weight:500;font-size:14px;cursor:pointer;}
-  .btn-danger{padding:10px 14px;border-radius:8px;background:var(--brique-soft);color:var(--brique);border:none;cursor:pointer;font-size:16px;}
-  .stamp{position:absolute;top:16px;right:16px;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-12deg);background:var(--flour);animation:stampIn .35s ease-out;}
-  .stamp-inner{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;}
-  .stamp-text{font-family:var(--mono-font);font-weight:700;font-size:9px;line-height:1.2;}
+  .actions-row{display:flex;gap:7px;margin-top:7px;}
+  .btn-outline{flex:1;padding:9px;border-radius:8px;background:#fff;border:1px solid var(--border);color:var(--crust);font-weight:500;font-size:12px;cursor:pointer;}
+  .btn-danger{padding:9px 12px;border-radius:8px;background:var(--brique-soft);color:var(--brique);border:none;cursor:pointer;font-size:15px;}
+  .stamp{position:absolute;top:14px;right:14px;width:65px;height:65px;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-12deg);background:var(--flour);animation:stampIn .35s ease-out;}
+  .stamp-inner{width:51px;height:51px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;}
+  .stamp-text{font-family:var(--mono-font);font-weight:700;font-size:8px;line-height:1.2;}
   @keyframes stampIn{0%{opacity:0;transform:scale(1.6) rotate(-18deg);}60%{opacity:1;}100%{opacity:1;transform:scale(1) rotate(-12deg);}}
-  .livreur-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-  .livreur-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+  .livreur-list{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
+  .livreur-item{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+  .livreur-row{display:flex;align-items:center;gap:8px;}
   .livreur-info{flex:1;min-width:0;}
-  .livreur-name{font-weight:600;font-size:14px;color:var(--crust);margin:0;}
-  .livreur-phone{font-size:12px;color:var(--taupe);text-decoration:none;display:block;margin-top:2px;}
-  .livreur-del{background:none;border:none;color:var(--brique);font-size:18px;cursor:pointer;padding:2px 6px;flex-shrink:0;}
-  .add-livreur-row{display:flex;gap:8px;margin-bottom:8px;}
-  .add-livreur-row input{flex:1;padding:9px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-family:var(--body-font);color:var(--crust);background:#fff;min-width:0;}
-  .btn-add{padding:9px 14px;border-radius:8px;border:none;background:var(--wheat);color:var(--crust);font-weight:700;font-size:18px;cursor:pointer;flex-shrink:0;}
-  .spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--crust);animation:spin .9s linear infinite;display:inline-block;}
-  .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;color:var(--taupe);}
+  .livreur-name{font-weight:600;font-size:13px;color:var(--crust);margin:0;}
+  .livreur-phone{font-size:11px;color:var(--taupe);text-decoration:none;display:inline-block;margin-top:1px;}
+  .livreur-del{background:none;border:none;color:var(--brique);font-size:16px;cursor:pointer;padding:2px 4px;flex-shrink:0;}
+  .camion-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
+  .camion-row input{padding:6px 8px;border-radius:6px;border:1px solid var(--border);font-size:12px;font-family:var(--body-font);color:var(--crust);background:#fff;width:100%;}
+  .camion-label{font-size:10px;color:var(--taupe);margin-bottom:2px;}
+  .add-livreur-row{display:flex;gap:6px;margin-bottom:6px;}
+  .add-livreur-row input{flex:1;padding:8px 9px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-family:var(--body-font);color:var(--crust);background:#fff;min-width:0;}
+  .btn-add{padding:8px 13px;border-radius:8px;border:none;background:var(--wheat);color:var(--crust);font-weight:700;font-size:17px;cursor:pointer;flex-shrink:0;}
+  .section-title{font-size:12px;font-weight:600;color:var(--crust);margin:0 0 8px;}
+  .spinner{width:26px;height:26px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--crust);animation:spin .9s linear infinite;display:inline-block;}
+  .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:72px 0;color:var(--taupe);}
   @keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
@@ -118,50 +119,50 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/p
 (function(){
 "use strict";
 var MOT_DE_PASSE="Mohcine";
-var STATUS_META={
-  pending:{label:'En attente',fg:'#C98A2B',bg:'#F7E9D2'},
-  delivered:{label:'Livre',fg:'#5B7553',bg:'#E9F0E6'},
-  absent:{label:'Absent',fg:'#B5392C',bg:'#FAE6E3'},
-  refused:{label:'Refuse',fg:'#B5392C',bg:'#FAE6E3'},
-  incident:{label:'Incident',fg:'#B5392C',bg:'#FAE6E3'}
-};
+var STATUS_META={pending:{label:'En attente',fg:'#C98A2B',bg:'#F7E9D2'},delivered:{label:'Livre',fg:'#5B7553',bg:'#E9F0E6'},absent:{label:'Absent',fg:'#B5392C',bg:'#FAE6E3'},refused:{label:'Refuse',fg:'#B5392C',bg:'#FAE6E3'},incident:{label:'Incident',fg:'#B5392C',bg:'#FAE6E3'}};
 var OUTCOMES=[{key:'delivered',label:'Livre'},{key:'absent',label:'Absent'},{key:'refused',label:'Refuse'},{key:'incident',label:'Incident'}];
 function loadLivreurs(){try{var r=localStorage.getItem('fdj-livreurs-list');return r?JSON.parse(r):[];}catch(e){return[];}}
-function saveLivreurs(list){try{localStorage.setItem('fdj-livreurs-list',JSON.stringify(list));}catch(e){}}
-var state={
-  screen:'login',loginError:'',
-  livreurs:loadLivreurs(),
-  date:toLocalISODate(new Date()),deliveries:[],loading:false,
-  showAdd:false,showLivreurs:false,
-  selectedId:null,errorMsg:'',pendingOutcome:'delivered',
-  selectedLivreurId:'',pdfParsing:false,pdfData:null
-};
+function saveLivreurs(l){try{localStorage.setItem('fdj-livreurs-list',JSON.stringify(l));}catch(e){}}
+function loadCamions(date){try{var r=localStorage.getItem('fdj-camions:'+date);return r?JSON.parse(r):[];}catch(e){return[];}}
+function saveCamions(date,l){try{localStorage.setItem('fdj-camions:'+date,JSON.stringify(l));}catch(e){}}
+var state={screen:'login',loginError:'',livreurs:loadLivreurs(),camions:loadCamions(toLocalISODate(new Date())),date:toLocalISODate(new Date()),deliveries:[],loading:false,showAdd:false,showLivreurs:false,selectedId:null,errorMsg:'',pendingOutcome:'delivered',selectedLivreurId:'',pdfParsing:false,pdfData:null};
 if(sessionStorage.getItem('fdj-auth')==='1')state.screen='app';
 function toLocalISODate(d){var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
 function formatDateLabel(s){var p=s.split('-').map(Number),dt=new Date(p[0],p[1]-1,p[2]);var l=dt.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});return l.charAt(0).toUpperCase()+l.slice(1);}
 function genId(){return 'd_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function mapsUrl(addr){return'https://maps.google.com/maps?daddr='+encodeURIComponent(addr);}
 function addLivreur(name,phone){var l={id:genId(),name:name.trim(),phone:phone.trim()};state.livreurs=state.livreurs.concat([l]);saveLivreurs(state.livreurs);}
 function deleteLivreur(id){state.livreurs=state.livreurs.filter(function(l){return l.id!==id;});saveLivreurs(state.livreurs);}
 function getLivreurById(id){return state.livreurs.find(function(l){return l.id===id;})||null;}
+function getCamionByLivreurId(livreurId){return state.camions.find(function(c){return c.livreurId===livreurId;})||null;}
+function upsertCamion(livreurId,fields){var existing=state.camions.find(function(c){return c.livreurId===livreurId;});if(existing){Object.assign(existing,fields);}else{state.camions=state.camions.concat([Object.assign({id:genId(),livreurId:livreurId},fields)]);}saveCamions(state.date,state.camions);}
+function exportExcel(){
+  if(typeof XLSX==='undefined'){alert('Export non disponible (connexion internet requise).');return;}
+  var rows=[['Heure prevue','Client','Adresse','Commande','Statut','Livreur','Tel Livreur','Heure livree','Constats']];
+  var sorted=state.deliveries.slice().sort(function(a,b){return(a.time||'').localeCompare(b.time||'');});
+  sorted.forEach(function(d){rows.push([d.time||'',d.client||'',d.address||'',d.ref||'',STATUS_META[d.status].label,d.livreur||'',d.livreurPhone||'',d.deliveredAt?new Date(d.deliveredAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'',d.note||'']);});
+  if(state.camions.length>0){rows.push([]);rows.push(['--- Camions ---']);rows.push(['Livreur','N Camion','Heure prise','Heure deposee']);state.camions.forEach(function(c){var liv=getLivreurById(c.livreurId);rows.push([liv?liv.name:'',c.camion||'',c.heurePrise||'',c.heureDepose||'']);});}
+  var ws=XLSX.utils.aoa_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tournee '+state.date);XLSX.writeFile(wb,'tournee-'+state.date+'.xlsx');
+}
+function generateInvoice(d){
+  var client=d.client||'',address=d.address||'',ref=d.ref||'';
+  var date=d.deliveredAt?new Date(d.deliveredAt).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR');
+  var num='FAC-'+Date.now().toString().slice(-6);
+  var products=ref.split(/[,|]/).map(function(p){return p.trim();}).filter(Boolean);
+  var prodRows=products.map(function(p){var m=p.match(/(.+?)\s*[xX]\s*(\d+)$/)||p.match(/(\d+)\s+(.+)/);var name=p,qty='1';if(m){name=m[1]||m[2];qty=m[2]||m[1];}return'<tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">'+name+'</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center;">'+qty+'</td></tr>';}).join('');
+  if(!prodRows)prodRows='<tr><td style="padding:6px 10px;" colspan="2">Voir bon de livraison</td></tr>';
+  var html='<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Facture '+num+'</title><style>body{font-family:Arial,sans-serif;margin:0;padding:32px;color:#222;}.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;}.brand{font-size:24px;font-weight:700;color:#2B1B12;}.brand-sub{font-size:12px;color:#8A7860;margin-top:2px;}.invoice-title{font-size:20px;font-weight:700;color:#C98A2B;text-align:right;}.invoice-num{font-size:12px;color:#8A7860;text-align:right;}.block{background:#f9f6ef;border-radius:8px;padding:14px;margin-bottom:16px;}.block-title{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8A7860;margin-bottom:6px;}table{width:100%;border-collapse:collapse;margin-top:8px;}th{background:#2B1B12;color:#fff;padding:8px 10px;text-align:left;font-size:12px;}@media print{.no-print{display:none;}body{padding:16px;}}</style></head><body><div class="no-print" style="margin-bottom:20px;"><button onclick="window.print()" style="padding:10px 20px;background:#C98A2B;color:#2B1B12;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">Imprimer / Enregistrer en PDF</button></div><div class="header"><div><div class="brand">Fournil de Jean</div><div class="brand-sub">37 rue Pierre Boulanger — 63100 Clermont-Ferrand</div><div class="brand-sub">Tel : 04 73 91 64 30 | contact@fournildejean.fr</div></div><div><div class="invoice-title">FACTURE</div><div class="invoice-num">N° '+num+'</div><div class="invoice-num">Date : '+date+'</div></div></div><div class="block"><div class="block-title">Destinataire</div><strong>'+esc(client)+'</strong><br>'+esc(address)+'</div><table><thead><tr><th>Designation</th><th style="width:80px;text-align:center;">Qte</th></tr></thead><tbody>'+prodRows+'</tbody></table><div style="margin-top:24px;font-size:11px;color:#8A7860;border-top:1px solid #eee;padding-top:12px;">Document genere par Carnet de tournee — Fournil de Jean</div></body></html>';
+  var w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}else{alert('Autorisez les popups pour generer la facture.');}
+}
 function parsePdfText(text){
   var lines=text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
-  var result={client:'',address:'',ref:'',instructions:''};
-  var i,cpIdx=-1;
+  var result={client:'',address:'',ref:'',instructions:''};var i,cpIdx=-1;
   for(i=0;i<lines.length;i++){if(/N.?\s*BL/i.test(lines[i])){var bm=lines[i].match(/N.?\s*(BL[\d\/]+)/i);if(bm)result.ref=bm[1].trim();break;}}
   for(i=0;i<lines.length;i++){if(/^\d{5}\s+[A-Za-z]/.test(lines[i])){if(cpIdx===-1){cpIdx=i;}else{cpIdx=i;break;}}}
-  if(cpIdx>0){
-    var addrLine=lines[cpIdx-1]||'';var ci=cpIdx-2;while(ci>=0&&!/[A-Z]{3,}/.test(lines[ci]))ci--;
-    var cl=[];for(var j=ci;j<cpIdx-1;j++)cl.push(lines[j]);
-    result.client=cl.join(' ').trim();result.address=addrLine+', '+lines[cpIdx];
-    for(i=cpIdx+1;i<Math.min(cpIdx+4,lines.length);i++){if(/tel|mob/i.test(lines[i])){var tm=lines[i].match(/[\d\s\.]{10,}/);if(tm)result.instructions='Tel : '+tm[0].trim();}}
-  }
-  var kw=/portail|code|digicode|sas|gardien|laisser|sonnette|livraison entre|reception|nuit/i;
-  var il=[];lines.forEach(function(l){if(kw.test(l)&&l.length>8)il.push(l);});
-  if(il.length)result.instructions=(result.instructions?result.instructions+'\n':'')+il.join(' ');
-  var pk=/pain|baguette|viennois|croissant|brioche|tradition|complet|seigle|\d{3,}g|\d+cm/i;
-  var pr=[];lines.forEach(function(l){if(pk.test(l))pr.push(l);});
-  if(pr.length)result.ref=(result.ref?result.ref+' | ':'')+pr.slice(0,3).join(', ');
+  if(cpIdx>0){var addrLine=lines[cpIdx-1]||'';var ci=cpIdx-2;while(ci>=0&&!/[A-Z]{3,}/.test(lines[ci]))ci--;var cl=[];for(var j=ci;j<cpIdx-1;j++)cl.push(lines[j]);result.client=cl.join(' ').trim();result.address=addrLine+', '+lines[cpIdx];for(i=cpIdx+1;i<Math.min(cpIdx+4,lines.length);i++){if(/tel|mob/i.test(lines[i])){var tm=lines[i].match(/[\d\s\.]{10,}/);if(tm)result.instructions='Tel : '+tm[0].trim();}}}
+  var kw=/portail|code|digicode|sas|gardien|laisser|sonnette|livraison entre|reception|nuit/i;var il=[];lines.forEach(function(l){if(kw.test(l)&&l.length>8)il.push(l);});if(il.length)result.instructions=(result.instructions?result.instructions+'\n':'')+il.join(' ');
+  var pk=/pain|baguette|viennois|croissant|brioche|tradition|complet|seigle|\d{3,}g|\d+cm/i;var pr=[];lines.forEach(function(l){if(pk.test(l))pr.push(l);});if(pr.length)result.ref=(result.ref?result.ref+' | ':'')+pr.slice(0,3).join(', ');
   return result;
 }
 function readPdf(file){
@@ -172,18 +173,13 @@ function readPdf(file){
       var pages=[];for(var p=1;p<=pdf.numPages;p++)pages.push(p);
       Promise.all(pages.map(function(p){return pdf.getPage(p).then(function(pg){return pg.getTextContent().then(function(c){return c.items.map(function(it){return it.str;}).join('\n');});});})).then(function(texts){
         var parsed=parsePdfText(texts.join('\n'));state.pdfData=parsed;state.pdfParsing=false;render();
-        setTimeout(function(){
-          if(document.getElementById('f-client')&&parsed.client)document.getElementById('f-client').value=parsed.client;
-          if(document.getElementById('f-address')&&parsed.address)document.getElementById('f-address').value=parsed.address;
-          if(document.getElementById('f-ref')&&parsed.ref)document.getElementById('f-ref').value=parsed.ref;
-          if(document.getElementById('f-instructions')&&parsed.instructions)document.getElementById('f-instructions').value=parsed.instructions;
-        },50);
+        setTimeout(function(){if(document.getElementById('f-client')&&parsed.client)document.getElementById('f-client').value=parsed.client;if(document.getElementById('f-address')&&parsed.address)document.getElementById('f-address').value=parsed.address;if(document.getElementById('f-ref')&&parsed.ref)document.getElementById('f-ref').value=parsed.ref;if(document.getElementById('f-instructions')&&parsed.instructions)document.getElementById('f-instructions').value=parsed.instructions;},50);
       });
     }).catch(function(){state.pdfParsing=false;state.errorMsg='Erreur lecture PDF.';render();});
   };
   reader.readAsArrayBuffer(file);
 }
-function load(date){state.loading=true;render();try{var raw=localStorage.getItem('fdj-tournee:'+date);state.deliveries=raw?(JSON.parse(raw)||[]):[];}catch(e){state.deliveries=[];}state.loading=false;render();}
+function load(date){state.loading=true;state.camions=loadCamions(date);render();try{var raw=localStorage.getItem('fdj-tournee:'+date);state.deliveries=raw?(JSON.parse(raw)||[]):[];}catch(e){state.deliveries=[];}state.loading=false;render();}
 function persist(list){state.deliveries=list;try{localStorage.setItem('fdj-tournee:'+state.date,JSON.stringify(list));}catch(e){state.errorMsg='Sauvegarde echouee.';}}
 function addDelivery(data){var entry={id:genId(),client:data.client,address:data.address,time:data.time,ref:data.ref||'',instructions:data.instructions||'',status:'pending',deliveredAt:null,livreur:'',livreurPhone:'',note:'',createdAt:new Date().toISOString()};persist(state.deliveries.concat([entry]));state.showAdd=false;state.pdfData=null;render();}
 function pointDelivery(id,updates){persist(state.deliveries.map(function(d){return d.id===id?Object.assign({},d,updates):d;}));render();}
@@ -203,44 +199,44 @@ function renderAddModal(){
   if(!state.showAdd)return'';
   var now=new Date(),rm=Math.ceil(now.getMinutes()/5)*5%60;
   var dt=String(now.getHours()).padStart(2,'0')+':'+String(rm).padStart(2,'0');
-  var pdfBtn=state.pdfParsing?'<button class="btn-pdf" disabled>⏳ Lecture du PDF en cours...</button>':'<button class="btn-pdf" data-action="open-pdf">📄 Importer un bon de livraison PDF</button>';
+  var pdfBtn=state.pdfParsing?'<button class="btn-pdf" disabled>Lecture du PDF en cours...</button>':'<button class="btn-pdf" data-action="open-pdf">📄 Importer un bon de livraison PDF</button>';
   var pdfOk=state.pdfData?'<div class="pdf-ok">✅ PDF importe — verifiez et completez les champs.</div>':'';
-  return'<div class="modal-overlay" data-action="close-add"><div class="modal-box" data-action="noop"><div class="modal-header"><h2 class="modal-title">Nouvelle livraison</h2><button class="close-btn" data-action="close-add">&#10005;</button></div>'+pdfBtn+pdfOk+'<div class="field"><label>Client *</label><input id="f-client" placeholder="Nom du client" value="'+esc(state.pdfData&&state.pdfData.client||'')+'" /></div><div class="field"><label>Adresse *</label><input id="f-address" placeholder="Adresse de livraison" value="'+esc(state.pdfData&&state.pdfData.address||'')+'" /></div><div class="field"><label>Heure prevue *</label><input id="f-time" type="time" value="'+dt+'" /></div><div class="field"><label>Commande</label><input id="f-ref" placeholder="Ex. 6 baguettes, 2 tartes" value="'+esc(state.pdfData&&state.pdfData.ref||'')+'" /></div><div class="field"><label>Instructions</label><textarea id="f-instructions" rows="2" placeholder="Code immeuble, etage...">'+esc(state.pdfData&&state.pdfData.instructions||'')+'</textarea></div><button class="btn-primary" data-action="submit-add">Ajouter a la tournee</button></div></div>';
+  var invoiceBtn=state.pdfData&&state.pdfData.client?'<button class="btn-invoice" data-action="gen-invoice-add">🧾 Generer la facture depuis ce PDF</button>':'';
+  return'<div class="modal-overlay" data-action="close-add"><div class="modal-box" data-action="noop"><div class="modal-header"><h2 class="modal-title">Nouvelle livraison</h2><button class="close-btn" data-action="close-add">&#10005;</button></div>'+pdfBtn+pdfOk+invoiceBtn+'<div class="field"><label>Client *</label><input id="f-client" placeholder="Nom du client" value="'+esc(state.pdfData&&state.pdfData.client||'')+'" /></div><div class="field"><label>Adresse *</label><input id="f-address" placeholder="Adresse de livraison" value="'+esc(state.pdfData&&state.pdfData.address||'')+'" />'+(state.pdfData&&state.pdfData.address?'<a class="maps-link" href="'+mapsUrl(state.pdfData.address)+'" target="_blank">📍 Voir sur Maps</a>':'')+'</div><div class="field"><label>Heure prevue *</label><input id="f-time" type="time" value="'+dt+'" /></div><div class="field"><label>Commande</label><input id="f-ref" placeholder="Ex. 6 baguettes, 2 tartes" value="'+esc(state.pdfData&&state.pdfData.ref||'')+'" /></div><div class="field"><label>Instructions</label><textarea id="f-instructions" rows="2" placeholder="Code immeuble, etage...">'+esc(state.pdfData&&state.pdfData.instructions||'')+'</textarea></div><button class="btn-primary" data-action="submit-add">Ajouter a la tournee</button></div></div>';
 }
 function renderLivreursModal(){
   if(!state.showLivreurs)return'';
-  var items=state.livreurs.length===0?'<p style="color:var(--taupe);font-size:13px;text-align:center;padding:16px 0;">Aucun livreur enregistre.</p>':'<div class="livreur-list">'+state.livreurs.map(function(l){return'<div class="livreur-item"><div class="livreur-info"><p class="livreur-name">👤 '+esc(l.name)+'</p>'+(l.phone?'<a class="livreur-phone" href="tel:'+esc(l.phone)+'">📞 '+esc(l.phone)+'</a>':'<span class="livreur-phone">Pas de telephone</span>')+'</div><button class="livreur-del" data-action="delete-livreur" data-id="'+l.id+'">🗑</button></div>';}).join('')+'</div>';
-  return'<div class="modal-overlay" data-action="close-livreurs"><div class="modal-box" data-action="noop"><div class="modal-header"><h2 class="modal-title">👥 Livreurs</h2><button class="close-btn" data-action="close-livreurs">&#10005;</button></div>'+items+'<div class="divider"></div><p style="font-size:13px;font-weight:600;color:var(--crust);margin:0 0 10px;">Ajouter un livreur</p><div class="add-livreur-row"><input id="nl-name" placeholder="Prenom" type="text" /><input id="nl-phone" placeholder="Telephone" type="tel" /><button class="btn-add" data-action="submit-add-livreur">+</button></div></div></div>';
+  var livItems=state.livreurs.length===0?'<p style="color:var(--taupe);font-size:13px;text-align:center;padding:12px 0;">Aucun livreur enregistre.</p>':'<div class="livreur-list">'+state.livreurs.map(function(l){var cam=getCamionByLivreurId(l.id)||{};return'<div class="livreur-item"><div class="livreur-row"><div class="livreur-info"><p class="livreur-name">👤 '+esc(l.name)+'</p>'+(l.phone?'<a class="livreur-phone" href="tel:'+esc(l.phone)+'">📞 '+esc(l.phone)+'</a>':'<span class="livreur-phone">Pas de telephone</span>')+'</div><button class="livreur-del" data-action="delete-livreur" data-id="'+l.id+'">🗑</button></div><div class="camion-row"><div><div class="camion-label">N° Camion</div><input type="text" class="camion-field" data-liv="'+l.id+'" data-field="camion" placeholder="Ex. CAM-01" value="'+esc(cam.camion||'')+'" /></div><div><div class="camion-label">Heure prise</div><input type="time" class="camion-field" data-liv="'+l.id+'" data-field="heurePrise" value="'+esc(cam.heurePrise||'')+'" /></div><div><div class="camion-label">Heure depose</div><input type="time" class="camion-field" data-liv="'+l.id+'" data-field="heureDepose" value="'+esc(cam.heureDepose||'')+'" /></div></div></div>';}).join('')+'</div>';
+  return'<div class="modal-overlay" data-action="close-livreurs"><div class="modal-box" data-action="noop"><div class="modal-header"><h2 class="modal-title">👥 Livreurs & 🚚 Camions</h2><button class="close-btn" data-action="close-livreurs">&#10005;</button></div>'+livItems+'<div class="divider"></div><p class="section-title">Ajouter un livreur</p><div class="add-livreur-row"><input id="nl-name" placeholder="Prenom" type="text" /><input id="nl-phone" placeholder="Telephone" type="tel" /><button class="btn-add" data-action="submit-add-livreur">+</button></div></div></div>';
 }
 function renderDetailModal(){
   if(!state.selectedId)return'';
   var d=state.deliveries.find(function(x){return x.id===state.selectedId;});if(!d)return'';
   var meta=STATUS_META[d.status],isPointed=d.status!=='pending';
-  var html='<div class="modal-overlay" data-action="close-detail"><div class="modal-box" data-action="noop">';
-  html+='<button class="close-btn" style="position:absolute;top:18px;left:18px;" data-action="close-detail">&#10005;</button>';
+  var html='<div class="modal-overlay" data-action="close-detail"><div class="modal-box" data-action="noop"><button class="close-btn" style="position:absolute;top:16px;left:16px;" data-action="close-detail">&#10005;</button>';
   if(isPointed){var ts=d.deliveredAt?new Date(d.deliveredAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';html+='<div class="stamp" style="border:2px solid '+meta.fg+'"><div class="stamp-inner" style="border:1px dashed '+meta.fg+'"><span class="stamp-text" style="color:'+meta.fg+'">'+meta.label.toUpperCase()+'<br>'+ts+'</span></div></div>';}
-  html+='<div style="padding-top:32px;padding-right:64px;"><p style="font-family:var(--mono-font);color:var(--taupe);font-size:12px;margin:0 0 2px;">'+esc(d.time)+(d.ref?' · '+esc(d.ref):'')+'</p><h2 style="font-family:var(--display-font);color:var(--crust);font-size:20px;font-weight:700;margin:0;">'+esc(d.client)+'</h2></div>';
-  html+='<div class="info-row"><span>📍</span><span>'+esc(d.address)+'</span></div>';
+  html+='<div style="padding-top:28px;padding-right:60px;"><p style="font-family:var(--mono-font);color:var(--taupe);font-size:11px;margin:0 0 2px;">'+esc(d.time)+(d.ref?' · '+esc(d.ref):'')+'</p><h2 style="font-family:var(--display-font);color:var(--crust);font-size:19px;font-weight:700;margin:0;">'+esc(d.client)+'</h2></div>';
+  html+='<div class="info-row"><span>📍</span><div>'+esc(d.address)+'<br><a class="maps-link" href="'+mapsUrl(d.address)+'" target="_blank">🗺 Ouvrir dans Maps</a></div></div>';
   if(d.instructions)html+='<div class="info-row" style="color:var(--taupe)"><span>📝</span><span>'+esc(d.instructions)+'</span></div>';
   html+='<div class="divider"></div>';
   if(!isPointed){
-    html+='<p style="font-size:14px;font-weight:600;margin:0 0 12px;">Pointer la livraison</p><div class="outcome-grid">';
+    html+='<p style="font-size:13px;font-weight:600;margin:0 0 10px;">Pointer la livraison</p><div class="outcome-grid">';
     OUTCOMES.forEach(function(o){var active=state.pendingOutcome===o.key,m=STATUS_META[o.key];html+='<button class="outcome-btn'+(active?' active':'')+'" style="'+(active?'background:'+m.fg+';':'')+'" data-action="set-outcome" data-key="'+o.key+'">'+o.label+'</button>';});
     html+='</div>';
     var options='<option value="">-- Choisir un livreur --</option>';
     state.livreurs.forEach(function(l){var sel=state.selectedLivreurId===l.id?' selected':'';options+='<option value="'+esc(l.id)+'"'+sel+'>'+esc(l.name)+(l.phone?' ('+esc(l.phone)+')':'')+'</option>';});
     html+='<div class="field"><label>Livreur</label><select id="f-livreur-select">'+options+'</select></div>';
     var selLiv=getLivreurById(state.selectedLivreurId);
-    if(selLiv&&selLiv.phone)html+='<div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;font-size:13px;">📞 <a href="tel:'+esc(selLiv.phone)+'" style="color:var(--wheat);">'+esc(selLiv.phone)+'</a></div>';
+    if(selLiv&&selLiv.phone)html+='<div style="font-size:12px;margin:-4px 0 10px;">📞 <a href="tel:'+esc(selLiv.phone)+'" style="color:var(--wheat);">'+esc(selLiv.phone)+'</a></div>';
     html+='<div class="field"><label>Vos constats</label><textarea id="f-note" rows="3" placeholder="Ex. remis en main propre, laisse chez le voisin..."></textarea></div>';
     html+='<button class="btn-primary" style="background:'+STATUS_META[state.pendingOutcome].fg+';color:#fff;" data-action="submit-point" data-id="'+d.id+'">Valider le pointage</button>';
   } else {
     var ts2=d.deliveredAt?new Date(d.deliveredAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
     html+='<div class="recap-grid"><div><p class="recap-label">Heure reelle</p><p class="recap-value mono">'+ts2+'</p></div>';
-    if(d.livreur)html+='<div><p class="recap-label">Livreur</p><p class="recap-value">'+esc(d.livreur)+(d.livreurPhone?' <a href="tel:'+esc(d.livreurPhone)+'" style="display:block;color:var(--wheat);font-size:12px;font-weight:400;">📞 '+esc(d.livreurPhone)+'</a>':'')+'</p></div>';
+    if(d.livreur)html+='<div><p class="recap-label">Livreur</p><p class="recap-value">'+esc(d.livreur)+(d.livreurPhone?' <a href="tel:'+esc(d.livreurPhone)+'" style="display:block;color:var(--wheat);font-size:11px;font-weight:400;">📞 '+esc(d.livreurPhone)+'</a>':'')+'</p></div>';
     html+='</div>';
-    if(d.note)html+='<div style="margin-bottom:12px;"><p class="recap-label">Constats</p><p style="font-size:14px;margin:0;">'+esc(d.note)+'</p></div>';
-    html+='<div class="actions-row"><button class="btn-outline" data-action="revert" data-id="'+d.id+'">&#8634; Annuler</button><button class="btn-danger" data-action="delete" data-id="'+d.id+'">&#128465;</button></div>';
+    if(d.note)html+='<div style="margin-bottom:10px;"><p class="recap-label">Constats</p><p style="font-size:13px;margin:2px 0 0;">'+esc(d.note)+'</p></div>';
+    html+='<div class="actions-row"><button class="btn-outline" data-action="gen-invoice" data-id="'+d.id+'">🧾 Facture</button><button class="btn-outline" data-action="revert" data-id="'+d.id+'">&#8634; Annuler</button><button class="btn-danger" data-action="delete" data-id="'+d.id+'">&#128465;</button></div>';
   }
   html+='</div></div>';return html;
 }
@@ -249,8 +245,8 @@ function renderApp(){
   var delivered=state.deliveries.filter(function(d){return d.status==='delivered';}).length;
   var pending=state.deliveries.filter(function(d){return d.status==='pending';}).length;
   var issues=state.deliveries.filter(function(d){return['absent','refused','incident'].indexOf(d.status)!==-1;}).length;
-  var html='<div class="container"><div class="header-row"><div class="badge-circle"><span>FdJ</span></div><div class="header-text"><p class="eyebrow">Carnet de tournee</p><h1 class="brand-title">Fournil de Jean</h1></div><div class="header-actions"><button class="btn-sm" data-action="open-livreurs">👥 Livreurs</button></div></div>';
-  html+='<p class="subtitle">Suivi des livraisons, heure par heure</p>';
+  var html='<div class="container"><div class="header-row"><div class="badge-circle"><span>FdJ</span></div><div class="header-text"><p class="eyebrow">Carnet de tournee</p><h1 class="brand-title">Fournil de Jean</h1></div><div class="header-actions"><button class="btn-sm" data-action="open-livreurs">👥</button><button class="btn-sm" data-action="export-excel">📊 Excel</button></div></div>';
+  html+='<p class="subtitle">Suivi des livraisons — '+formatDateLabel(state.date)+'</p>';
   if(state.errorMsg)html+='<div class="error-box">'+esc(state.errorMsg)+'</div>';
   html+='<div class="date-row"><button class="btn-icon" data-action="prev-day">&#8249;</button><button class="date-btn" data-action="today">'+formatDateLabel(state.date)+'</button><button class="btn-icon" data-action="next-day">&#8250;</button></div>';
   html+='<div class="stats-grid">'+statChip('Total',total,'#2B1B12')+statChip('Livrees',delivered,'#5B7553')+statChip('Attente',pending,'#C98A2B')+statChip('Incidents',issues,'#B5392C')+'</div>';
@@ -259,10 +255,7 @@ function renderApp(){
   return html;
 }
 function renderLoginScreen(){return'<div class="login-screen"><div class="login-badge"><span>FdJ</span></div><h1 class="login-title">Fournil de Jean</h1><p class="login-sub">Carnet de tournee — acces securise</p><div class="login-card"><label class="login-label">Mot de passe</label><input class="login-input" id="l-pwd" type="password" placeholder="••••••••" /><button class="login-btn" data-action="do-login">Entrer</button><p class="login-error">'+esc(state.loginError)+'</p></div></div>';}
-function render(){
-  if(state.screen==='login'){document.getElementById('app').innerHTML=renderLoginScreen();setTimeout(function(){var el=document.getElementById('l-pwd');if(el)el.focus();},50);return;}
-  document.getElementById('app').innerHTML=renderApp();
-}
+function render(){if(state.screen==='login'){document.getElementById('app').innerHTML=renderLoginScreen();setTimeout(function(){var el=document.getElementById('l-pwd');if(el)el.focus();},50);return;}document.getElementById('app').innerHTML=renderApp();}
 document.getElementById('app').addEventListener('click',function(e){
   var el=e.target.closest('[data-action]');if(!el)return;
   var action=el.getAttribute('data-action'),id=el.getAttribute('data-id');
@@ -272,6 +265,9 @@ document.getElementById('app').addEventListener('click',function(e){
   if(action==='close-livreurs'){state.showLivreurs=false;render();return;}
   if(action==='submit-add-livreur'){var nm=document.getElementById('nl-name').value.trim();var ph=document.getElementById('nl-phone').value.trim();if(!nm)return;addLivreur(nm,ph);render();return;}
   if(action==='delete-livreur'){if(confirm('Supprimer ce livreur ?')){deleteLivreur(id);render();}return;}
+  if(action==='export-excel'){exportExcel();return;}
+  if(action==='gen-invoice'){var deliv=state.deliveries.find(function(x){return x.id===id;});if(deliv)generateInvoice(deliv);return;}
+  if(action==='gen-invoice-add'){if(state.pdfData){var client=document.getElementById('f-client').value.trim()||state.pdfData.client;var address=document.getElementById('f-address').value.trim()||state.pdfData.address;var ref=document.getElementById('f-ref').value.trim()||state.pdfData.ref;generateInvoice({client:client,address:address,ref:ref,deliveredAt:null});}return;}
   if(action==='prev-day')changeDate(-1);
   else if(action==='next-day')changeDate(1);
   else if(action==='today')changeDate('today');
@@ -287,6 +283,7 @@ document.getElementById('app').addEventListener('click',function(e){
   else if(action==='delete')deleteDelivery(id);
 });
 document.getElementById('app').addEventListener('change',function(e){if(e.target.id==='f-livreur-select'){state.selectedLivreurId=e.target.value;render();}});
+document.getElementById('app').addEventListener('blur',function(e){if(e.target.classList.contains('camion-field')){var livId=e.target.getAttribute('data-liv');var field=e.target.getAttribute('data-field');var val=e.target.value.trim();var update={};update[field]=val;upsertCamion(livId,update);}},true);
 document.getElementById('app').addEventListener('keydown',function(e){if(e.key!=='Enter')return;if(state.screen==='login'){var b=document.querySelector('[data-action="do-login"]');if(b)b.click();}});
 document.getElementById('pdf-input').addEventListener('change',function(e){var file=e.target.files&&e.target.files[0];if(file)readPdf(file);e.target.value='';});
 render();
