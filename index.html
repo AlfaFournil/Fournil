@@ -332,72 +332,75 @@ function parsePdfText(text){
   var blNum=text.match(/N[°o\.\s]*(BL[\w\/\-]+)/i);
   if(blNum) result.ref=blNum[1].trim();
 
-  // 2. Date de livraison "Le : 11/07/2026"
+  // 2. Date "Le : 11/07/2026"
   var dateM=text.match(/Le\s*:\s*(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i);
   if(dateM) result.date=dateM[1].trim();
 
-  // 3. Client — chercher "Le Montrognon" ou nom propre AVANT l'adresse
-  // Dans ce BL, le client est la ligne qui précède la rue (Avenue/Rue/Place/Chemin)
-  var clientIdx=-1;
+  // 3. Chercher la RUE du CLIENT (pas celle de l'expéditeur)
+  // On cherche "avenue/rue/place" en ignorant les rues de l'expéditeur
+  var streetIdx=-1;
+  var skipStreet=/boulanger|facturation|standard|clermont/i;
   for(var i=0;i<lines.length;i++){
-    if(/^\d+\s+(avenue|rue|place|chemin|impasse|boulevard|allée|route)/i.test(lines[i])){
-      // La ligne juste avant est le client
-      for(var k=i-1;k>=0;k--){
-        var prev=lines[k];
-        // Ignorer les lignes techniques
-        if(prev&&!/^(le\s*:|n[°o]|page|code|t[eé]l|mob|standard|email|\d{5}|tourn[eé]e|bon de|evenement|\d{2}[\/\-])/i.test(prev)&&prev.length>2){
-          result.client=prev;
-          clientIdx=k;
-          break;
-        }
-      }
-      result.address=lines[i];
-      // Chercher le code postal sur la ligne suivante
-      if(i+1<lines.length&&/^\d{5}\s+/.test(lines[i+1])){
-        result.address+=', '+lines[i+1];
-      }
+    if(/\d+\s+(avenue|rue|place|chemin|impasse|boulevard|allée|route)/i.test(lines[i])
+       && !skipStreet.test(lines[i])){
+      streetIdx=i;
       break;
     }
   }
 
-  // Si pas trouvé avec rue, chercher par code postal
-  if(!result.client){
-    for(var i=0;i<lines.length;i++){
-      if(/^\d{5}\s+/.test(lines[i])){
-        if(i>0) result.address=(lines[i-1]||'')+', '+lines[i];
-        for(var k=i-2;k>=0;k--){
-          var prev=lines[k];
-          if(prev&&!/^(le\s*:|n[°o]|page|code|t[eé]l|mob|standard|email|tourn[eé]e|bon de|evenement|\d{2}[\/\-])/i.test(prev)&&prev.length>2){
-            result.client=prev;
-            break;
-          }
-        }
+  if(streetIdx>=0){
+    result.address=lines[streetIdx];
+    // Code postal juste après la rue
+    for(var j=streetIdx+1;j<Math.min(streetIdx+5,lines.length);j++){
+      if(/^\d{5}\s+/.test(lines[j])){
+        result.address+=', '+lines[j];
         break;
+      }
+    }
+    // Client : remonter depuis streetIdx pour trouver nom propre
+    for(var k=streetIdx-1;k>=0;k--){
+      var prev=lines[k];
+      if(prev && prev.length>2
+         && !/^(le\s*:|n[°o]|page|code|d[eé]signation|quantit|standard|email|tél|tel|mob|sir|facturation|bon de|tournée|evenement|atelier|sas\s|63[01]\d{2}|\d{2}[\/\-]\d{2})/i.test(prev)){
+        result.client=prev;
+        break;
+      }
+    }
+  }
+
+  // Fallback : si client vide, chercher nom entre "Code" et "Tél"
+  if(!result.client){
+    var codeIdx=-1,telIdx=-1;
+    for(var i=0;i<lines.length;i++){
+      if(/^code$/i.test(lines[i])) codeIdx=i;
+      if(/^(t[eé]l|tel)\s*:/i.test(lines[i])&&telIdx===-1) telIdx=i;
+    }
+    if(codeIdx>=0&&telIdx>codeIdx){
+      for(var i=codeIdx+1;i<telIdx;i++){
+        var l=lines[i];
+        if(l&&l.length>2&&!/^\d/.test(l)&&!/^(mob|d[eé]signation|quantit)/i.test(l)){
+          if(!result.client) result.client=l;
+          else if(!result.address) result.address=l;
+        }
       }
     }
   }
 
   // 4. Téléphone
   var tel=text.match(/T[eé]l\s*[:\-]\s*([\d\s\-\.]{10,})/i);
-  if(tel) result.instructions='Tél : '+tel[1].trim().replace(/\s+/g,' ');
+  if(tel) result.instructions='Tél : '+tel[1].trim().replace(/\s+/g,' ').substring(0,20);
 
-  // 5. Heure depuis "ENTRE 10H00 ET 11H00"
+  // 5. Heure "ENTRE 10H00"
   var timeM=text.match(/ENTRE\s+(\d{1,2})H(\d{0,2})/i);
   if(timeM) result.time=String(timeM[1]).padStart(2,'0')+':'+(timeM[2]&&timeM[2].length?String(timeM[2]).padStart(2,'0'):'00');
 
-  // 6. Instruction livraison complète
+  // 6. Instruction livraison
   var instrM=text.match(/LIVRAISON[^\n]{5,}/i);
   if(instrM) result.instructions=(result.instructions?result.instructions+' | ':'')+instrM[0].trim();
 
-  // 7. Nom d'événement (ligne tout majuscules, pas technique)
-  var evtName='';
-  var skipEv=/^(BON DE|TOURNEE|EVENEMENTIEL|LIVRAISON|DESIGNATION|CODE|PAGE|STANDARD|EMAIL|SAS|TEL|MOB|BL|MARIAGE|VIC)/i;
-  lines.forEach(function(l){
-    if(!evtName&&/^[A-Z][A-Z\s]{4,}$/.test(l)&&!skipEv.test(l)&&l.length>5) evtName=l;
-  });
-  // Chercher MARIAGE/EVENEMENT spécifiquement
-  var evtSpecific=text.match(/(MARIAGE[^\n]+|EVENEMENT[^\n]+|BAPTEME[^\n]+|ANNIVERSAIRE[^\n]+)/i);
-  if(evtSpecific) evtName=evtSpecific[1].trim();
+  // 7. Événement spécifique
+  var evtSp=text.match(/(MARIAGE[^\n]+|EVENEMENT[^\n]+|BAPTEME[^\n]+|ANNIVERSAIRE[^\n]+|COMMUNION[^\n]+)/i);
+  var evtName=evtSp?evtSp[1].trim():'';
 
   // 8. Produits avec quantités
   var products=[];
@@ -405,7 +408,7 @@ function parsePdfText(text){
     var m=l.match(/^(.{3,})\s+(\d{1,4})\s*$/);
     if(m&&parseInt(m[2])>0){
       var n=m[1].trim();
-      if(!/^(page|le\s*:|code|designation|quantit[eé]|standard|facturation|tourn[eé]e)/i.test(n)&&n.length>2){
+      if(!/^(page|le\s*:|code|d[eé]signation|quantit[eé]|standard|facturation|tourn[eé]e)/i.test(n)&&n.length>2){
         products.push(n+' x'+m[2]);
       }
     }
