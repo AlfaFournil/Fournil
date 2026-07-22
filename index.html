@@ -230,6 +230,13 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);min-height
 .prod-qty:focus{border-color:var(--teal-d);}
 .prod-qty::placeholder{font-size:11px;font-weight:400;color:var(--teal);}
 .prod-del{background:none;border:none;color:var(--ink-3);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0;opacity:.5;}
+
+.mic-wrap{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.btn-mic{background:none;border:1.5px solid var(--rule);border-radius:8px;font-size:20px;padding:6px 10px;cursor:pointer;transition:all .15s;flex-shrink:0;}
+.btn-mic.recording{color:#fff;background:var(--red);border-color:var(--red);animation:micpulse .7s infinite;}
+@keyframes micpulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.mic-status{font-size:10px;color:var(--red);font-weight:700;letter-spacing:.06em;display:none;}
+.mic-status.active{display:block;}
 .btn-add-prod{width:100%;padding:8px;border-radius:6px;border:1px dashed var(--rule);background:none;color:var(--ink-3);font-size:11px;font-weight:600;cursor:pointer;margin-top:2px;letter-spacing:.04em;}
 .sel-bar{display:flex;align-items:center;gap:8px;padding:8px 20px;background:var(--red-s);border-bottom:1px solid rgba(200,40,26,.2);animation:fadeIn .2s;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -297,7 +304,7 @@ function loadCamions(date){try{var r=localStorage.getItem('fdj-camions:'+date);r
 function saveCamions(date,l){try{localStorage.setItem('fdj-camions:'+date,JSON.stringify(l));}catch(e){}}
 
 function hashPwd(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h)^s.charCodeAt(i);return(h>>>0).toString(36);}
-var state={screen:'choose',role:null,loginError:'',livreurName:localStorage.getItem('fdj-livreur')||'',livreurId:null,pendingLivreurName:'',pendingLivreurObj:null,livreurs:loadLivreurs(),camions:loadCamions(toLocalISODate(new Date())),date:toLocalISODate(new Date()),deliveries:[],loading:false,showAdd:false,showLivreurs:false,selectedId:null,errorMsg:'',pendingOutcome:'delivered',selectedLivreurId:'',pdfParsing:false,pdfData:null,selMode:false,selected:{}};
+var state={screen:'choose',role:null,loginError:'',livreurName:localStorage.getItem('fdj-livreur')||'',livreurId:null,pendingLivreurName:'',pendingLivreurObj:null,livreurs:loadLivreurs(),camions:loadCamions(toLocalISODate(new Date())),date:toLocalISODate(new Date()),deliveries:[],loading:false,showAdd:false,showLivreurs:false,selectedId:null,errorMsg:'',pendingOutcome:'delivered',selectedLivreurId:'',pdfParsing:false,pdfData:null,selMode:false,selected:{},modifyMode:false};
 var savedRole=sessionStorage.getItem('fdj-role');
 if(savedRole==='responsable'){state.screen='app';state.role='responsable';}
 else if(savedRole==='livreur'&&localStorage.getItem('fdj-livreur')){state.screen='app';state.role='livreur';state.livreurId=sessionStorage.getItem('fdj-livreur-id')||null;}
@@ -312,6 +319,31 @@ function convertDate(d){
   var p=d.split(/[\/\-]/);
   if(p.length===3&&p[2].length===4)return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');
   return d;
+}
+function startVoice(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('Reconnaissance vocale non disponible sur ce navigateur.');return;}
+  var rec=new SR();
+  rec.lang='fr-FR';
+  rec.continuous=false;
+  rec.interimResults=false;
+  var btn=document.getElementById('mic-btn');
+  var status=document.getElementById('mic-status');
+  rec.onstart=function(){if(btn)btn.classList.add('recording');if(status)status.classList.add('active');};
+  rec.onresult=function(e){
+    var t=e.results[0][0].transcript;
+    var field=document.getElementById('f-note');
+    if(field)field.value=(field.value?field.value+' ':'')+t;
+    if(btn)btn.classList.remove('recording');
+    if(status)status.classList.remove('active');
+  };
+  rec.onerror=function(e){
+    if(btn)btn.classList.remove('recording');
+    if(status)status.classList.remove('active');
+    if(e.error==='not-allowed')alert('Microphone non autorisé. Autorisez-le dans Chrome > Paramètres > Autorisations du site.');
+  };
+  rec.onend=function(){if(btn)btn.classList.remove('recording');if(status)status.classList.remove('active');};
+  rec.start();
 }
 function nowTime(){var n=new Date(),m=Math.round(n.getMinutes()/5)*5;if(m>=60)m=0;return String(n.getHours()).padStart(2,'0')+':'+String(m).padStart(2,'0');}
 function fmtTime(raw){var d=(raw||'').replace(/\D/g,'').slice(0,4);if(d.length>=3)return d.slice(0,2)+':'+d.slice(2,4);return d;}
@@ -551,8 +583,8 @@ function renderLivreurApp(){var total=state.deliveries.length,delivered=state.de
 
 function renderAddModal(){if(!state.showAdd)return'';var pdfBtn=state.pdfParsing?'<button class="btn-pdf" disabled>⏳ Lecture en cours...</button>':'<button class="btn-pdf" data-action="open-pdf">📄 Importer un bon de livraison PDF</button>';var pdfOk=state.pdfData?'<div class="pdf-ok">✅ PDF importé — vérifiez les champs.</div>':'';var invBtn='';return'<div class="modal-overlay" data-action="close-add"><div class="modal-sheet" data-action="noop"><div class="modal-head"><h2 class="modal-title">Nouvelle livraison</h2><button class="modal-close" data-action="close-add">✕</button></div>'+pdfBtn+pdfOk+invBtn+'<div class="field"><div class="field-label">Date de livraison</div><input id="f-date" type="date" value="'+esc(state.pdfData&&state.pdfData.date?convertDate(state.pdfData.date):toLocalISODate(new Date()))+'" /></div><div class="field"><div class="field-label">Client *</div><input id="f-client" placeholder="Nom du client" value="'+esc(state.pdfData&&state.pdfData.client||'')+'" /></div><div class="field"><div class="field-label">Adresse *</div><input id="f-address" placeholder="Adresse de livraison" value="'+esc(state.pdfData&&state.pdfData.address||'')+'" />'+(state.pdfData&&state.pdfData.address?'<a class="maps-link" href="'+mapsUrl(state.pdfData.address)+'" target="_blank">📍 Voir sur Maps</a>':'')+'</div>'+timeInputBig('f-time',state.pdfData&&state.pdfData.time||'')+'<div class="field"><div class="field-label">N° BL</div><input id="f-bl" placeholder="Ex. BL1/123456" value="'+esc(state.pdfData&&state.pdfData.blNum||'')+'" /></div>'+renderProductsSection()+'<div class="field"><div class="field-label">Instructions</div><textarea id="f-instructions" rows="2" placeholder="Code immeuble, étage...">'+esc(state.pdfData&&state.pdfData.instructions||'')+'</textarea></div><button class="btn-primary" data-action="submit-add">Ajouter à la tournée</button><button class=\"btn-pdf\" style=\"margin-top:10px;border:1.5px solid var(--teal);color:var(--teal-d);background:var(--teal-l);font-weight:700;\" data-action=\"download-bl\">📄 Télécharger le BL modifié</button></div></div>';}
 function renderLivreursModal(){if(!state.showLivreurs)return'';var livItems=state.livreurs.length===0?'<p style="color:var(--ink-3);font-size:13px;text-align:center;padding:16px 0;">Aucun livreur enregistré.</p>':'<div class="livreur-list">'+state.livreurs.map(function(l){return'<div class="livreur-item"><div class="livreur-info"><div class="livreur-name">'+esc(l.name)+'</div>'+(l.phone?'<a class="livreur-phone" href="tel:'+esc(l.phone)+'">📞 '+esc(l.phone)+'</a>':'<span class="livreur-phone">Pas de téléphone</span>')+(l.pwdHash?'<span class="livreur-pwd-status">🔐 Mot de passe défini</span>':'<span class="livreur-pwd-status livreur-no-pwd">⚠️ Pas de mot de passe</span>')+'</div><div style="display:flex;gap:6px;"><button class="btn-reset-pwd" data-action="reset-pwd-livreur" data-id="'+l.id+'">Réinit.</button><button class="livreur-del" data-action="delete-livreur" data-id="'+l.id+'">🗑</button></div></div>';}).join('')+'</div>';return'<div class="modal-overlay" data-action="close-livreurs"><div class="modal-sheet" data-action="noop"><div class="modal-head"><h2 class="modal-title">Livreurs</h2><button class="modal-close" data-action="close-livreurs">✕</button></div>'+livItems+'<div class="divider"></div><div class="section-lbl">Ajouter un livreur</div><div class="add-row"><input id="nl-name" placeholder="Prénom" type="text"/><input id="nl-phone" placeholder="Téléphone" type="tel"/><button class="btn-add-lv" data-action="submit-add-livreur">+</button></div></div></div>';}
-function renderDetailModal(){if(!state.selectedId)return'';var d=state.deliveries.find(function(x){return x.id===state.selectedId;});if(!d)return'';var meta=STATUS_META[d.status],isPointed=d.status!=='pending';var html='<div class="modal-overlay" data-action="close-detail"><div class="modal-sheet" data-action="noop">';if(isPointed){var ts=d.deliveredAt?new Date(d.deliveredAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';html+='<div class="stamp" style="border:2px solid '+meta.fg+'"><div class="stamp-inner" style="border:1px dashed '+meta.fg+'"><span class="stamp-text" style="color:'+meta.fg+'">'+meta.label.toUpperCase()+'<br>'+ts+'</span></div></div>';}html+='<div style="padding-right:'+(isPointed?'84px':'0')+';margin-bottom:4px;"><div style="font-family:var(--mono);color:var(--ink-3);font-size:11px;margin-bottom:4px;">'+esc(d.time)+(d.ref?' · '+esc(d.ref):'')+'</div><div style="font-family:var(--display);font-size:20px;font-weight:400;color:var(--ink);">'+esc(d.client)+'</div></div>';html+='<div class="info-row"><span>📍</span><div>'+esc(d.address)+'<br><a class="maps-link" href="'+mapsUrl(d.address)+'" target="_blank">🗺 Ouvrir dans Maps</a></div></div>';if(d.instructions)html+='<div class="info-row"><span>📝</span><span>'+esc(d.instructions)+'</span></div>';html+='<div class="divider"></div>';if(!isPointed){if(state.role==='responsable'){
-    // Responsable : seulement assigner le livreur
+function renderDetailModal(){if(!state.selectedId)return'';var d=state.deliveries.find(function(x){return x.id===state.selectedId;});if(!d)return'';var meta=STATUS_META[d.status],isPointed=d.status!=='pending';var html='<div class="modal-overlay" data-action="close-detail"><div class="modal-sheet" data-action="noop">';if(isPointed){var ts=d.deliveredAt?new Date(d.deliveredAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';html+='<div class="stamp" style="border:2px solid '+meta.fg+'"><div class="stamp-inner" style="border:1px dashed '+meta.fg+'"><span class="stamp-text" style="color:'+meta.fg+'">'+meta.label.toUpperCase()+'<br>'+ts+'</span></div></div>';}html+='<div style="padding-right:'+(isPointed?'84px':'0')+';margin-bottom:4px;"><div style="font-family:var(--mono);color:var(--ink-3);font-size:11px;margin-bottom:4px;">'+esc(d.time)+(d.ref?' · '+esc(d.ref):'')+'</div><div style="font-family:var(--display);font-size:20px;font-weight:400;color:var(--ink);">'+esc(d.client)+'</div></div>';html+='<div class="info-row"><span>📍</span><div>'+esc(d.address)+'<br><a class="maps-link" href="'+mapsUrl(d.address)+'" target="_blank">🗺 Ouvrir dans Maps</a></div></div>';if(d.instructions)html+='<div class="info-row"><span>📝</span><span>'+esc(d.instructions)+'</span></div>';html+='<div class="divider"></div>';if(!isPointed){if(state.role==='responsable'&&!state.modifyMode){
+    // Responsable normal : seulement assigner le livreur
     var opts2='<option value="">— Assigner un livreur —</option>';
     state.livreurs.forEach(function(l){var sel=d.livreur===l.name?' selected':'';opts2+='<option value="'+esc(l.id)+'"'+sel+'>'+esc(l.name)+(l.phone?' ('+esc(l.phone)+')':'')+'</option>';});
     html+='<div style="font-size:11px;color:var(--ink-3);margin-bottom:14px;">Le livreur pointera cette livraison depuis son interface.</div>';
@@ -561,13 +593,14 @@ function renderDetailModal(){if(!state.selectedId)return'';var d=state.deliverie
     if(curLiv&&curLiv.phone)html+='<div style="font-size:12px;margin:-4px 0 12px;"><a href="tel:'+esc(curLiv.phone)+'" style="color:var(--teal);font-weight:700;">📞 '+esc(curLiv.phone)+'</a></div>';
     html+='<button class="btn-primary" style="background:var(--teal);" data-action="assign-livreur" data-id="'+d.id+'">Confirmer assignation</button>';
   }else{
-    // Livreur : pointage complet
+    // Livreur OU responsable en mode Modifier : form complet de pointage
+    // Pointage complet
     html+='<div style="font-size:10px;font-weight:700;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;">Pointer la livraison</div><div class="outcome-grid">';OUTCOMES.forEach(function(o){var active=state.pendingOutcome===o.key;html+='<button class="outcome-btn '+o.cls+(active?' active':'')+'" data-action="set-outcome" data-key="'+o.key+'">'+o.label+'</button>';});html+='</div>';
-    var opts='<option value="">— Choisir un livreur —</option>';state.livreurs.forEach(function(l){var sel=l.id===state.livreurId?' selected':'';opts+='<option value="'+esc(l.id)+'"'+sel+'>'+esc(l.name)+(l.phone?' ('+esc(l.phone)+')':'')+'</option>';});
+    var opts='<option value="">— Choisir un livreur —</option>';state.livreurs.forEach(function(l){var presel=(state.role==='livreur'&&l.id===state.livreurId)||(state.modifyMode&&l.name===d.livreur)||state.selectedLivreurId===l.id;opts+='<option value="'+esc(l.id)+'"'+(presel?' selected':'')+'>'+esc(l.name)+(l.phone?' ('+esc(l.phone)+')':'')+'</option>';});
     html+='<div class="field"><div class="field-label">Livreur</div><select id="f-livreur-select">'+opts+'</select></div>';
-    var slid=state.livreurId;var sliv=getLivreurById(slid);
+    var slid=state.modifyMode?(state.livreurs.find(function(l){return l.name===d.livreur;})||{id:null}).id:state.livreurId;var sliv=getLivreurById(slid);
     if(sliv&&sliv.phone)html+='<div style="font-size:12px;margin:-4px 0 12px;"><a href="tel:'+esc(sliv.phone)+'" style="color:var(--teal);font-weight:700;">📞 '+esc(sliv.phone)+'</a></div>';
-    html+='<div class="field"><div class="field-label">Constats</div><textarea id="f-note" rows="3" placeholder="Remis en main propre, laissé chez voisin..."></textarea></div>';
+    html+='<div class="field"><div class="mic-wrap"><div class="field-label" style="flex:1;">Constats</div><button id="mic-btn" class="btn-mic" data-action="start-voice" title="Parler">🎙</button><span id="mic-status" class="mic-status">● Écoute...</span></div><textarea id="f-note" rows="3" placeholder="Remis en main propre, laissé chez voisin..."></textarea></div>';
     html+='<button class="btn-primary" style="background:'+meta.fg+';" data-action="submit-point" data-id="'+d.id+'">Valider le pointage</button>';
   }}else{var ts2=d.deliveredAt?new Date(d.deliveredAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';html+='<div class="recap-grid"><div><div class="recap-lbl">Heure réelle</div><div class="recap-val mono">'+ts2+'</div></div>';if(d.livreur)html+='<div><div class="recap-lbl">Livreur</div><div class="recap-val">'+esc(d.livreur)+(d.livreurPhone?' <a href="tel:'+esc(d.livreurPhone)+'" style="display:block;color:var(--teal);font-size:11px;font-weight:700;margin-top:2px;">📞 '+esc(d.livreurPhone)+'</a>':'')+'</div></div>';html+='</div>';if(d.note)html+='<div style="margin-bottom:12px;"><div class="recap-lbl">Constats</div><div style="font-size:13px;color:var(--ink-2);margin-top:4px;">'+esc(d.note)+'</div></div>';html+='<div class="actions-row">';if(state.role==='responsable'){html+='<button class="btn-outline" data-action="gen-invoice" data-id="'+d.id+'">🧾 Facture</button>';html+='<button class="btn-outline" data-action="revert" data-id="'+d.id+'">↩ Annuler</button><button class="btn-danger" data-action="delete" data-id="'+d.id+'">🗑</button>';}html+='</div>';}html+='</div></div>';return html;}
 
@@ -684,9 +717,11 @@ else if(action==='submit-add'){
   addDelivery({client:c,address:a,time:t,ref:r,instructions:ins,deliveryDate:dv});
 }
 else if(action==='select'){state.selectedId=id;state.pendingOutcome='delivered';if(state.role!=='livreur')state.selectedLivreurId='';render();}
-else if(action==='close-detail'){state.selectedId=null;render();}
+else if(action==='close-detail'){state.selectedId=null;state.modifyMode=false;render();}
 else if(action==='set-outcome'){state.pendingOutcome=el.getAttribute('data-key');render();}
-else if(action==='submit-point'){var selId=state.role==='livreur'?state.livreurId:state.selectedLivreurId;var liv=getLivreurById(selId);var note=document.getElementById('f-note').value.trim();pointDelivery(id,{status:state.pendingOutcome,deliveredAt:new Date().toISOString(),livreur:liv?liv.name:(state.role==='livreur'?state.livreurName:''),livreurPhone:liv?liv.phone:'',note:note});if(state.role==='livreur'){state.selectedId=null;render();}}
+else if(action==='start-voice'){startVoice();}
+else if(action==='submit-point'){var selId=state.role==='livreur'?state.livreurId:state.selectedLivreurId;var liv=getLivreurById(selId);var note=document.getElementById('f-note').value.trim();pointDelivery(id,{status:state.pendingOutcome,deliveredAt:new Date().toISOString(),livreur:liv?liv.name:(state.role==='livreur'?state.livreurName:''),livreurPhone:liv?liv.phone:'',note:note});if(state.role==='livreur'){state.selectedId=null;render();}state.modifyMode=false;}
+else if(action==='modify'){state.modifyMode=true;revertDelivery(id);}
 else if(action==='revert')revertDelivery(id);
 else if(action==='delete')deleteDelivery(id);
 });
